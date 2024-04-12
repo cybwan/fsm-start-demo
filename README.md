@@ -40,7 +40,7 @@ cd fsm-start-demo
 [c1 consul bookwarehouse]
 ```
 
-## 场景二: [Consul & K8S 跨集群混合架构微服务融合](scenarios.2.md)
+## 场景二: [Consul & K8S 跨集群混合架构微服务融合](scenarios.2.md)(多级 fgw)
 
 ### **调用流程**
 
