@@ -79,3 +79,22 @@ cd fsm-start-demo
 -(sidecar)->
 [c1 consul bookwarehouse]
 ```
+
+## 场景四: [Consul & K8S 跨集群混合架构微服务融合](scenarios.4.md)(禁用多级 fgw)
+
+### **调用流程**
+
+```html
+[c3 consul bookbuyer]
+-(sidecar)->
+-->
+[c2 fgw ingress]
+-(sidecar)->
+[c2 consul bookstore]
+-(sidecar)->
+-->
+[c1 fgw ingress]
+-(sidecar)->
+[c1 native bookwarehouse]
+```
+
