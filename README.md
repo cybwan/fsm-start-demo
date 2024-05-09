@@ -98,3 +98,15 @@ cd fsm-start-demo
 [c1 native bookwarehouse]
 ```
 
+## 场景五: [Nacos 微服务整合](scenarios.5.md)
+
+### **调用流程**
+
+```html
+[c1 nacos curl]
+-(c1 nacos curl sidecar)->
+-(c1 nacos httpbin sidecar)->
+[c1 consul httpbin]
+```
+
+## 
