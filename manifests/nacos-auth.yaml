@@ -40,3 +40,11 @@ spec:
           env:
             - name: MODE
               value: "standalone"
+            - name: NACOS_AUTH_ENABLE
+              value: 'true'
+            - name: NACOS_AUTH_TOKEN
+              value: SecretKeyM1Z2WDc4dnVyZkQ3NmZMZjZ3RHRwZnJjNFROdkJOemEK
+            - name: NACOS_AUTH_IDENTITY_KEY
+              value: nacos
+            - name: NACOS_AUTH_IDENTITY_VALUE
+              value: nacos
