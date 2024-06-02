@@ -4,8 +4,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-CTR_REGISTRY="${CTR_REGISTRY:-flomesh}"
-CTR_TAG="${CTR_TAG:-1.2.5}"
+CTR_REGISTRY="${CTR_REGISTRY:-cybwan}"
+CTR_TAG="${CTR_TAG:-1.3.4-alpha.1}"
 IMAGE_PULL_POLICY="${IMAGE_PULL_POLICY:-Always}"
 
 fsm_namespace="${fsm_namespace:-fsm-system}"

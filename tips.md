@@ -49,3 +49,10 @@ connector_pod=$(sudo kubectl get pod -n fsm-system -l app=fsm-connector-${connec
 sudo kubectl get pod -n fsm-system ${connector_pod} -o yaml
 ```
 
+临时指令
+
+```bash
+sudo kubectl get svc -n derive-nacos-2 httpbin -o yaml
+sudo kubectl get endpoints -n derive-nacos-2 httpbin -o yaml
+```
+
