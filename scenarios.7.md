@@ -1,6 +1,6 @@
 # 场景 Consul 跨集群微服务融合
 
-## 1 部署 C1 C2 三个集群
+## 1 部署 C1 C2 两个集群
 
 ```bash
 export clusters="C1 C2"
@@ -217,7 +217,7 @@ EOF
 kubecm switch k3d-C2
 ```
 
-## 4 卸载 C1 C2 三个集群
+## 4 卸载 C1 C2 两个集群
 
 ```bash
 export clusters="C1 C2"

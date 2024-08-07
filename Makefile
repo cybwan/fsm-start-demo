@@ -3,6 +3,7 @@
 fsm_cluster_name ?= fsm
 PORT_FORWARD ?= 14001:14001
 WITH_MESH ?= false
+COUNT ?= 1000
 
 .PHONY: k3d-up
 k3d-up:
@@ -202,3 +203,11 @@ curl-port-forward:
 	export PORT_FORWARD=$(PORT_FORWARD);\
 	export POD=$$(kubectl get pods --selector app=curl -n curl --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n curl "$$PORT_FORWARD" --address 0.0.0.0
+
+.PHONY: batch-create-eureka-services
+batch-create-eureka-services:
+	./scripts/eurekacli --action create --count $(COUNT)
+
+.PHONY: batch-delete-eureka-services
+batch-delete-eureka-services:
+	./scripts/eurekacli --action delete --count $(COUNT)
