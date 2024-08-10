@@ -412,21 +412,37 @@ kubecm switch k3d-C3
 
 PORT_FORWARD="14003:14001" make bookbuyer-port-forward &
 
+echo
+echo
+
 echo c1_consul_cluster_ip $c1_consul_cluster_ip
 echo c1_consul_external_ip $c1_consul_external_ip
 echo c1_consul_pod_ip $c1_consul_pod_ip
+
+echo
 echo c2_consul_cluster_ip $c2_consul_cluster_ip
 echo c2_consul_external_ip $c2_consul_external_ip
 echo c2_consul_pod_ip $c2_consul_pod_ip
+
+echo
 echo c3_consul_cluster_ip $c3_consul_cluster_ip
 echo c3_consul_external_ip $c3_consul_external_ip
 echo c3_consul_pod_ip $c3_consul_pod_ip
+
+echo
 echo c1_fgw_cluster_ip $c1_fgw_cluster_ip
 echo c1_fgw_external_ip $c1_fgw_external_ip
 echo c1_fgw_pod_ip $c1_fgw_pod_ip
+
+echo
 echo c2_fgw_cluster_ip $c2_fgw_cluster_ip
 echo c2_fgw_external_ip $c2_fgw_external_ip
 echo c2_fgw_pod_ip $c2_fgw_pod_ip
+
+echo
 echo c3_fgw_cluster_ip $c3_fgw_cluster_ip
 echo c3_fgw_external_ip $c3_fgw_external_ip
 echo c3_fgw_pod_ip $c3_fgw_pod_ip
+
+echo
+echo
