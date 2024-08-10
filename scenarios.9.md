@@ -88,6 +88,8 @@ spec:
           from: All
 EOF
 
+sleep 2
+
 kubectl wait --all --for=condition=ready pod -n "$fsm_namespace" -l app=svclb-fsm-gateway-fsm-system-tcp --timeout=180s
 
 until kubectl get service/fsm-gateway-fsm-system-tcp -n $fsm_namespace --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
