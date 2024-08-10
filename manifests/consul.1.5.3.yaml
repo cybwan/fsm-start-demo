@@ -28,6 +28,6 @@ spec:
     spec:
       containers:
         - name: consul
-          image: consul:1.5.3
+          image: localhost:5000/consul:1.5.3
           ports:
             - containerPort: 8500
