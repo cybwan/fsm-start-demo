@@ -1,4 +1,4 @@
-#!/bin/bash
+#!make
 
 fsm_cluster_name ?= fsm
 PORT_FORWARD ?= 14001:14001
@@ -211,3 +211,11 @@ batch-create-eureka-services:
 .PHONY: batch-delete-eureka-services
 batch-delete-eureka-services:
 	./scripts/eurekacli --action delete --count $(COUNT)
+
+.PHONY: up-scenarios-1
+up-scenarios-1:
+	./scripts/scenarios.1.sh
+
+.PHONY: down-scenarios-1
+down-scenarios-1:
+	export clusters="C1 C2 C3";make k3d-reset
