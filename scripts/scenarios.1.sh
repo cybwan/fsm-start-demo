@@ -146,6 +146,8 @@ EOF
 
 kubectl wait --all --for=condition=ready pod -n "$fsm_namespace" -l app=svclb-fsm-gateway-fsm-system-tcp --timeout=180s
 
+until kubectl get service/fsm-gateway-fsm-system-tcp -n $fsm_namespace --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+
 kubectl patch AccessControl -n fsm-policy global --type=json -p='[{"op": "add", "path": "/spec/sources/-", "value": {"kind":"Service","namespace":"fsm-system","name":"fsm-gateway-fsm-system-tcp"}}]'
 
 export c1_fgw_cluster_ip="$(kubectl get svc -n $fsm_namespace --field-selector metadata.name=fsm-gateway-fsm-system-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
@@ -246,6 +248,8 @@ spec:
 EOF
 
 kubectl wait --all --for=condition=ready pod -n "$fsm_namespace" -l app=svclb-fsm-gateway-fsm-system-tcp --timeout=180s
+
+until kubectl get service/fsm-gateway-fsm-system-tcp -n $fsm_namespace --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
 kubectl patch AccessControl -n fsm-policy global --type=json -p='[{"op": "add", "path": "/spec/sources/-", "value": {"kind":"Service","namespace":"fsm-system","name":"fsm-gateway-fsm-system-tcp"}}]'
 
@@ -348,6 +352,8 @@ EOF
 
 kubectl wait --all --for=condition=ready pod -n "$fsm_namespace" -l app=svclb-fsm-gateway-fsm-system-tcp --timeout=180s
 
+until kubectl get service/fsm-gateway-fsm-system-tcp -n $fsm_namespace --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+
 kubectl patch AccessControl -n fsm-policy global --type=json -p='[{"op": "add", "path": "/spec/sources/-", "value": {"kind":"Service","namespace":"fsm-system","name":"fsm-gateway-fsm-system-tcp"}}]'
 
 export c3_fgw_cluster_ip="$(kubectl get svc -n $fsm_namespace --field-selector metadata.name=fsm-gateway-fsm-system-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
@@ -405,3 +411,22 @@ EOF
 kubecm switch k3d-C3
 
 PORT_FORWARD="14003:14001" make bookbuyer-port-forward &
+
+echo c1_consul_cluster_ip $c1_consul_cluster_ip
+echo c1_consul_external_ip $c1_consul_external_ip
+echo c1_consul_pod_ip $c1_consul_pod_ip
+echo c2_consul_cluster_ip $c2_consul_cluster_ip
+echo c2_consul_external_ip $c2_consul_external_ip
+echo c2_consul_pod_ip $c2_consul_pod_ip
+echo c3_consul_cluster_ip $c3_consul_cluster_ip
+echo c3_consul_external_ip $c3_consul_external_ip
+echo c3_consul_pod_ip $c3_consul_pod_ip
+echo c1_fgw_cluster_ip $c1_fgw_cluster_ip
+echo c1_fgw_external_ip $c1_fgw_external_ip
+echo c1_fgw_pod_ip $c1_fgw_pod_ip
+echo c2_fgw_cluster_ip $c2_fgw_cluster_ip
+echo c2_fgw_external_ip $c2_fgw_external_ip
+echo c2_fgw_pod_ip $c2_fgw_pod_ip
+echo c3_fgw_cluster_ip $c3_fgw_cluster_ip
+echo c3_fgw_external_ip $c3_fgw_external_ip
+echo c3_fgw_pod_ip $c3_fgw_pod_ip

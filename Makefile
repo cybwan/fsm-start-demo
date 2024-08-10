@@ -25,6 +25,7 @@ consul-deploy:
 	kubectl apply -n default -f ./manifests/consul.$(CONSUL_VERSION).yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n default -l app=consul --timeout=180s
+	until kubectl get service/consul --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
 .PHONY: consul-reboot
 consul-reboot:
@@ -35,6 +36,7 @@ eureka-deploy:
 	kubectl apply -n default -f ./manifests/eureka.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n default -l app=eureka --timeout=180s
+	until kubectl get service/eureka --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
 .PHONY: eureka-reboot
 eureka-reboot:
@@ -45,6 +47,7 @@ nacos-deploy:
 	kubectl apply -n default -f ./manifests/nacos.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n default -l app=nacos --timeout=180s
+	until kubectl get service/nacos --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
 .PHONY: nacos-auth-deploy
 nacos-auth-deploy:
