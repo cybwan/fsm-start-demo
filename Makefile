@@ -119,6 +119,24 @@ deploy-consul-bookbuyer:
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
 
+.PHONY: deploy-consul-httpbin
+deploy-consul-httpbin:
+	kubectl delete namespace httpbin --ignore-not-found
+	kubectl create namespace httpbin
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
+	kubectl apply -n httpbin -f ./manifests/consul/httpbin.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
+
+.PHONY: deploy-consul-curl
+deploy-consul-curl:
+	kubectl delete namespace curl --ignore-not-found
+	kubectl create namespace curl
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
+	kubectl apply -n curl -f ./manifests/consul/curl.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
+
 .PHONY: deploy-eureka-bookwarehouse
 deploy-eureka-bookwarehouse:
 	kubectl delete namespace bookwarehouse --ignore-not-found
@@ -145,6 +163,24 @@ deploy-eureka-bookbuyer:
 	kubectl apply -n bookbuyer -f ./manifests/eureka/bookbuyer.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
+
+.PHONY: deploy-eureka-httpbin
+deploy-eureka-httpbin:
+	kubectl delete namespace httpbin --ignore-not-found
+	kubectl create namespace httpbin
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
+	kubectl apply -n httpbin -f ./manifests/eureka/httpbin.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
+
+.PHONY: deploy-eureka-curl
+deploy-eureka-curl:
+	kubectl delete namespace curl --ignore-not-found
+	kubectl create namespace curl
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
+	kubectl apply -n curl -f ./manifests/eureka/curl.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
 .PHONY: deploy-nacos-bookwarehouse
 deploy-nacos-bookwarehouse:
@@ -255,3 +291,11 @@ up-scenarios-5:
 .PHONY: down-scenarios-5
 down-scenarios-5:
 	export clusters="C1";make k3d-reset
+
+.PHONY: up-scenarios-a
+up-scenarios-a:
+	./scripts/scenarios.a.sh
+
+.PHONY: down-scenarios-a
+down-scenarios-a:
+	export clusters="C1 C2 C3";make k3d-reset

@@ -32,6 +32,7 @@ fsm install \
     --set=clusterSet.name="$fsm_cluster_name" \
     --set fsm.fsmIngress.enabled=false \
     --set fsm.fsmGateway.enabled=true \
+    --set fsm.fsmGateway.fgwLogLevel=debug \
     --set=fsm.localDNSProxy.enable=true \
     --set=fsm.localDNSProxy.wildcard.enable=false \
     --set=fsm.localDNSProxy.primaryUpstreamDNSServerIPAddr=$dns_svc_ip \
