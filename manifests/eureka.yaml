@@ -29,6 +29,7 @@ spec:
       containers:
         - name: eureka
           image: flomesh/samples-discovery-server:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8761
           resources:

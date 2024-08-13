@@ -1,4 +1,4 @@
-# 场景 Consul 跨集群微服务多网关模式
+# 场景 Consul 跨集群微服务单网关模式
 
 ## 1 部署 C1 C2 C3 三个集群
 
@@ -148,7 +148,7 @@ spec:
 EOF
 
 #WITH_MESH=true make deploy-consul-httpbin
-#WITH_MESH=true make deploy-consul-curl
+WITH_MESH=true make deploy-consul-curl
 ```
 
 ## 3 微服务融合
@@ -493,6 +493,7 @@ spec:
     enable: true
     withGateway: 
       enable: true
+      multiGateways: false
   syncFromK8S:
     enable: false
 EOF

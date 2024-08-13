@@ -81,6 +81,7 @@ spec:
       containers:
         - name: bookstore
           image: cybwan/springboot-demo:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001
           env:

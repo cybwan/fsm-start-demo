@@ -1,5 +1,5 @@
 #!/bin/bash
-# 场景 Consul 跨集群微服务调度策略
+# 场景 Consul 跨集群微服务多网关模式
 
 ## 1 部署 C1 C2 C3 三个集群
 
@@ -148,8 +148,8 @@ spec:
     name: consul
 EOF
 
-WITH_MESH=true make deploy-consul-httpbin
-WITH_MESH=true make deploy-consul-curl
+#WITH_MESH=true make deploy-consul-httpbin
+#WITH_MESH=true make deploy-consul-curl
 #
 
 ## 3 微服务融合

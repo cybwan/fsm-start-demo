@@ -29,6 +29,7 @@ spec:
       containers:
         - name: consul
           image: consul:1.15.4
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8500
           env:

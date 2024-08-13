@@ -297,10 +297,26 @@ up-scenarios-5:
 down-scenarios-5:
 	export clusters="C1";make k3d-reset
 
+.PHONY: up-scenarios-8
+up-scenarios-8:
+	./scripts/scenarios.8.sh
+
+.PHONY: down-scenarios-8
+down-scenarios-8:
+	export clusters="C1 C2";make k3d-reset
+
 .PHONY: up-scenarios-a
 up-scenarios-a:
 	./scripts/scenarios.a.sh
 
 .PHONY: down-scenarios-a
 down-scenarios-a:
+	export clusters="C1 C2 C3";make k3d-reset
+
+.PHONY: up-scenarios-b
+up-scenarios-b:
+	./scripts/scenarios.b.sh
+
+.PHONY: down-scenarios-b
+down-scenarios-b:
 	export clusters="C1 C2 C3";make k3d-reset
