@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: ztm-hub
-          image: cybwan/ztm-hub:0.1.0
+          image: cybwan/ztm-hub:0.2.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888
           command: [ 'ztm' ]

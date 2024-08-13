@@ -60,3 +60,19 @@ ztm-hub-deploy:
 	names=$(names) envsubst < ./manifests/ztm-hub.yaml | kubectl apply -n default -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n default -l app=ztm-hub --timeout=180s
+
+.PHONY: up-scenarios-1
+up-scenarios-1:
+	./scripts/scenarios.1.sh
+
+.PHONY: down-scenarios-1
+down-scenarios-1:
+	export clusters="C1 C2 C3";make k3d-reset
+
+.PHONY: up-scenarios-2
+up-scenarios-2:
+	./scripts/scenarios.2.sh
+
+.PHONY: down-scenarios-2
+down-scenarios-2:
+	export clusters="C1 C2 C3";make k3d-reset

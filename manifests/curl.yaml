@@ -36,6 +36,6 @@ spec:
         kubernetes.io/os: linux
       containers:
       - image: cybwan/curl:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: curl
         command: ["sleep", "365d"]
