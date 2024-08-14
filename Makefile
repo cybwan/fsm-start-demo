@@ -249,6 +249,11 @@ curl-port-forward:
 	export POD=$$(kubectl get pods --selector app=curl -n curl --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n curl "$$PORT_FORWARD" --address 0.0.0.0
 
+.PHONY: logs-fgw-sidecar
+logs-fgw-sidecar:
+	export POD=$$(kubectl get pods --selector app=fsm-gateway -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl logs "$$POD" -n fsm-system -c gateway -f
+
 .PHONY: batch-create-eureka-services
 batch-create-eureka-services:
 	./scripts/eurekacli --action create --count $(COUNT)
