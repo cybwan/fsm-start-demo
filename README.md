@@ -112,3 +112,7 @@ cd fsm-start-demo
 ## 场景六: [Nacos 多集群HA微服务融合](scenarios.6.md)
 
 ## 场景九: [Eureka 跨集群微服务融合压力测试](scenarios.9.md)
+
+## 场景十: [Consul 跨集群微服务多网关Forward模式](scenarios.a.md)
+
+## 场景十一: [Consul 跨集群微服务单网关Forward模式](scenarios.b.md)
