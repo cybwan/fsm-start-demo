@@ -110,3 +110,5 @@ cd fsm-start-demo
 ```
 
 ## 场景六: [Nacos 多集群HA微服务融合](scenarios.6.md)
+
+## 场景九: [Eureka 跨集群微服务融合压力测试](scenarios.9.md)

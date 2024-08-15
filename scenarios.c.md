@@ -1,4 +1,4 @@
-# 场景 Consul 跨集群微服务多网关Forward模式
+# 场景 Consul 跨集群微服务多网关Proxy模式
 
 ## 1 部署 C1 C2 C3 三个集群
 
@@ -279,6 +279,7 @@ spec:
     enable: true
     withGateway: 
       enable: true
+      gatewayMode: proxy
     allowK8sNamespaces:
       - derive-consul
 EOF
@@ -410,6 +411,7 @@ spec:
     enable: true
     withGateway: 
       enable: true
+      gatewayMode: proxy
     allowK8sNamespaces:
       - derive-consul
 EOF

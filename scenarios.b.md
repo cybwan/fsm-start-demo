@@ -1,4 +1,4 @@
-# 场景 Consul 跨集群微服务Forward单网关模式
+# 场景 Consul 跨集群微服务单网关Forward模式
 
 ## 1 部署 C1 C2 C3 三个集群
 
