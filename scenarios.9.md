@@ -26,8 +26,6 @@ fsm_cluster_name=C1 make deploy-fsm
 ```bash
 make eureka-deploy
 
-PORT_FORWARD="8761:8761" make eureka-port-forward &
-
 export c1_eureka_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=eureka -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c1_eureka_cluster_ip $c1_eureka_cluster_ip
 
@@ -160,9 +158,13 @@ EOF
 #### 3.1.5 压力测试
 
 ```bash
-COUNT=10 make batch-create-eureka-services
+PORT_FORWARD="8761:8761" make eureka-port-forward &
 
-COUNT=10 make batch-delete-eureka-services
+sleep 2
+
+COUNT=20 make batch-create-eureka-services
+
+COUNT=20 make batch-delete-eureka-services
 ```
 
 ## 4 卸载 C1 集群
