@@ -116,3 +116,7 @@ cd fsm-start-demo
 ## 场景十: [Consul 跨集群微服务多网关Forward模式](scenarios.a.md)
 
 ## 场景十一: [Consul 跨集群微服务单网关Forward模式](scenarios.b.md)
+
+## 场景十二: [Consul 跨集群微服务多网关Proxy模式](scenarios.c.md)
+
+## 场景十三: [Consul 跨集群微服务单网关Proxy模式](scenarios.d.md)
