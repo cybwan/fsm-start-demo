@@ -44,7 +44,7 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: httpbin
+  name: ${cluster}-httpbin
   labels:
     version: v1
 spec:

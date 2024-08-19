@@ -129,7 +129,7 @@ deploy-consul-httpbin:
 	kubectl delete namespace httpbin --ignore-not-found
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
-	kubectl apply -n httpbin -f ./manifests/consul/httpbin.yaml
+	cluster=$(fsm_cluster_name) envsubst < ./manifests/consul/httpbin.yaml | kubectl apply -n httpbin -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
@@ -138,7 +138,7 @@ deploy-consul-curl:
 	kubectl delete namespace curl --ignore-not-found
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
-	kubectl apply -n curl -f ./manifests/consul/curl.yaml
+	cluster=$(fsm_cluster_name) envsubst < ./manifests/consul/curl.yaml | kubectl apply -n curl -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
@@ -174,7 +174,7 @@ deploy-eureka-httpbin:
 	kubectl delete namespace httpbin --ignore-not-found
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
-	kubectl apply -n httpbin -f ./manifests/eureka/httpbin.yaml
+	cluster=$(fsm_cluster_name) envsubst < ./manifests/eureka/httpbin.yaml | kubectl apply -n httpbin -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
@@ -183,7 +183,7 @@ deploy-eureka-curl:
 	kubectl delete namespace curl --ignore-not-found
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
-	kubectl apply -n curl -f ./manifests/eureka/curl.yaml
+	cluster=$(fsm_cluster_name) envsubst < ./manifests/eureka/curl.yaml | kubectl apply -n curl -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
@@ -219,7 +219,7 @@ deploy-nacos-httpbin:
 	kubectl delete namespace httpbin --ignore-not-found
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
-	kubectl apply -n httpbin -f ./manifests/nacos/httpbin.yaml
+	cluster=$(fsm_cluster_name) envsubst < ./manifests/nacos/httpbin.yaml | kubectl apply -n httpbin -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
@@ -228,7 +228,7 @@ deploy-nacos-curl:
 	kubectl delete namespace curl --ignore-not-found
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
-	kubectl apply -n curl -f ./manifests/nacos/curl.yaml
+	cluster=$(fsm_cluster_name) envsubst < ./manifests/nacos/curl.yaml | kubectl apply -n curl -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 

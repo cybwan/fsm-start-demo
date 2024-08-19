@@ -21,7 +21,15 @@ kubecm switch k3d-C1
 fsm_cluster_name=C1 make deploy-fsm
 ```
 
-#### 2.1.2 部署 Consul 微服务
+#### 2.1.2 启用按请求负载均衡策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+```
+
+#### 2.1.3 部署 Consul 微服务
 
 ```bash
 make consul-deploy
@@ -53,7 +61,7 @@ spec:
     name: consul
 EOF
 
-WITH_MESH=true make deploy-consul-httpbin
+WITH_MESH=true fsm_cluster_name=c1 make deploy-consul-httpbin
 ```
 
 ### 2.2 C2集群
@@ -68,7 +76,15 @@ kubecm switch k3d-C2
 fsm_cluster_name=C2 make deploy-fsm
 ```
 
-#### 2.2.2 部署 Consul 微服务
+#### 2.2.2 启用按请求负载均衡策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+```
+
+#### 2.2.3 部署 Consul 微服务
 
 ```bash
 make consul-deploy
@@ -100,7 +116,7 @@ spec:
     name: consul
 EOF
 
-WITH_MESH=true make deploy-consul-httpbin
+WITH_MESH=true fsm_cluster_name=c2 make deploy-consul-httpbin
 ```
 
 ### 2.3 C3集群
@@ -115,7 +131,15 @@ kubecm switch k3d-C3
 fsm_cluster_name=C3 make deploy-fsm
 ```
 
-#### 2.3.2 部署 Consul 微服务
+#### 2.3.2 启用按请求负载均衡策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+```
+
+#### 2.3.3 部署 Consul 微服务
 
 ```bash
 make consul-deploy
@@ -147,8 +171,8 @@ spec:
     name: consul
 EOF
 
-#WITH_MESH=true make deploy-consul-httpbin
-WITH_MESH=true make deploy-consul-curl
+WITH_MESH=true fsm_cluster_name=c3 make deploy-consul-curl
+WITH_MESH=true fsm_cluster_name=c3 make deploy-consul-httpbin
 ```
 
 ## 3 微服务融合
@@ -524,16 +548,64 @@ spec:
 EOF
 ```
 
-## 4 确认服务调用效果
+## 4 集群调度策略
+
+### 4.1 切换集群
 
 ```bash
 kubecm switch k3d-C3
+export c3_curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
+echo c3_curl_pod_name $c3_curl_pod_name
+```
 
-PORT_FORWARD="14003:14001" make curl-port-forward &
+### 4.2 FailOver
 
-访问 
-http://127.0.0.1:14003
-确认运行效果
+#### 4.2.1 设置集群调度策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"connector":{"lbType":"FailOver"}}}' --type=merge
+```
+
+#### 4.2.2 确认服务调用效果
+
+**多次执行:**
+
+```bash
+kubectl exec -n curl $c3_curl_pod_name -c curl -- curl -s 127.0.0.1:14001
+```
+
+**正确返回结果类似于:**
+
+```bash
+c3-httpbin-5dd47d8645-b6vhd
+c3-httpbin-5dd47d8645-b6vhd
+c3-httpbin-5dd47d8645-b6vhd
+```
+
+### 4.3 ActiveActive
+
+#### 4.3.1 设置集群调度策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"connector":{"lbType":"ActiveActive"}}}' --type=merge
+```
+
+#### 4.3.2 确认服务调用效果
+
+**多次执行:**
+
+```bash
+kubectl exec -n curl $c3_curl_pod_name -c curl -- curl -s 127.0.0.1:14001
+```
+
+**正确返回结果类似于:**
+
+```bash
+c1-httpbin-5dd47d8645-vjbbs
+c3-httpbin-5dd47d8645-b6vhd
+c2-httpbin-5dd47d8645-jh9nm
 ```
 
 ## 5 卸载 C1 C2 C3 三个集群
