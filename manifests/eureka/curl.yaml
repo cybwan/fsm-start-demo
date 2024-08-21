@@ -42,7 +42,7 @@ data:
     eureka:
       client:
         serviceUrl:
-          defaultZone: http://eureka.default.svc:8761/eureka/
+          defaultZone: http://eureka.default:8761/eureka/
     spring:
       config:
         activate:
@@ -55,7 +55,7 @@ metadata:
   labels:
     version: v1
 spec:
-  replicas: 1
+  replicas: ${replicas}
   selector:
     matchLabels:
       app: curl

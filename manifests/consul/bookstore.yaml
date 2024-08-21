@@ -49,7 +49,7 @@ data:
     spring:
       cloud:
         consul:
-          host: consul.default.svc
+          host: consul.default
           port: 8500
       zone: prod
       config:

@@ -120,3 +120,5 @@ cd fsm-start-demo
 ## 场景十二: [Consul 跨集群微服务多网关Proxy模式](scenarios.c.md)
 
 ## 场景十三: [Consul 跨集群微服务单网关Proxy模式](scenarios.d.md)
+
+## 场景十四: [Consul 跨集群微服务融合HA测试](scenarios.e.md)

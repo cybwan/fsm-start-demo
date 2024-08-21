@@ -1,9 +1,11 @@
 #!make
 
-fsm_cluster_name ?= fsm
 PORT_FORWARD ?= 14001:14001
 WITH_MESH ?= false
 COUNT ?= 1000
+
+fsm_cluster_name ?= fsm
+replicas ?= 1
 
 .PHONY: k3d-up
 k3d-up:
@@ -129,7 +131,7 @@ deploy-consul-httpbin:
 	kubectl delete namespace httpbin --ignore-not-found
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
-	cluster=$(fsm_cluster_name) envsubst < ./manifests/consul/httpbin.yaml | kubectl apply -n httpbin -f -
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/consul/httpbin.yaml | kubectl apply -n httpbin -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
@@ -138,7 +140,7 @@ deploy-consul-curl:
 	kubectl delete namespace curl --ignore-not-found
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
-	cluster=$(fsm_cluster_name) envsubst < ./manifests/consul/curl.yaml | kubectl apply -n curl -f -
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/consul/curl.yaml | kubectl apply -n curl -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
@@ -174,7 +176,7 @@ deploy-eureka-httpbin:
 	kubectl delete namespace httpbin --ignore-not-found
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
-	cluster=$(fsm_cluster_name) envsubst < ./manifests/eureka/httpbin.yaml | kubectl apply -n httpbin -f -
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/eureka/httpbin.yaml | kubectl apply -n httpbin -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
@@ -183,7 +185,7 @@ deploy-eureka-curl:
 	kubectl delete namespace curl --ignore-not-found
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
-	cluster=$(fsm_cluster_name) envsubst < ./manifests/eureka/curl.yaml | kubectl apply -n curl -f -
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/eureka/curl.yaml | kubectl apply -n curl -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
@@ -219,7 +221,7 @@ deploy-nacos-httpbin:
 	kubectl delete namespace httpbin --ignore-not-found
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
-	cluster=$(fsm_cluster_name) envsubst < ./manifests/nacos/httpbin.yaml | kubectl apply -n httpbin -f -
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/nacos/httpbin.yaml | kubectl apply -n httpbin -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
@@ -228,7 +230,7 @@ deploy-nacos-curl:
 	kubectl delete namespace curl --ignore-not-found
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
-	cluster=$(fsm_cluster_name) envsubst < ./manifests/nacos/curl.yaml | kubectl apply -n curl -f -
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/nacos/curl.yaml | kubectl apply -n curl -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
@@ -348,4 +350,12 @@ up-scenarios-d:
 
 .PHONY: down-scenarios-d
 down-scenarios-d:
+	export clusters="C1 C2 C3";make k3d-reset
+
+.PHONY: up-scenarios-e
+up-scenarios-e:
+	./scripts/scenarios.e.sh
+
+.PHONY: down-scenarios-e
+down-scenarios-e:
 	export clusters="C1 C2 C3";make k3d-reset
