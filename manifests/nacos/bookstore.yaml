@@ -37,7 +37,7 @@ data:
       cloud:
         nacos:
           discovery:
-            server-addr: nacos.default.svc:8848
+            server-addr: nacos.default:8848
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -64,6 +64,7 @@ spec:
       containers:
         - name: bookstore
           image: cybwan/springboot-demo:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001
           env:

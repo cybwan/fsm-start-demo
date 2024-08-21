@@ -37,18 +37,18 @@ data:
       cloud:
         nacos:
           discovery:
-            server-addr: nacos.default.svc:8848
+            server-addr: nacos.default:8848
             username: nacos
             password: nacos
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: curl
+  name: ${cluster}-curl
   labels:
     version: v1
 spec:
-  replicas: 1
+  replicas: ${replicas}
   selector:
     matchLabels:
       app: curl
@@ -66,6 +66,7 @@ spec:
       containers:
         - name: curl
           image: cybwan/springboot-demo:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001
           env:

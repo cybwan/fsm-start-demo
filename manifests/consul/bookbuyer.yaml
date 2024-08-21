@@ -49,7 +49,7 @@ data:
     spring:
       cloud:
         consul:
-          host: consul.default.svc
+          host: consul.default
           port: 8500
       zone: prod
       config:
@@ -81,6 +81,7 @@ spec:
       containers:
         - name: bookbuyer
           image: cybwan/springboot-demo:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001
           env:

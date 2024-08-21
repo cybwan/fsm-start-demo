@@ -1,4 +1,4 @@
-# 场景 Consul 跨集群微服务融合
+# 场景 Consul 跨集群微服务融合HA测试
 
 ## 1 部署 C1 C2 C3 三个集群
 
@@ -19,6 +19,14 @@ kubecm switch k3d-C1
 
 ```bash
 fsm_cluster_name=C1 make deploy-fsm
+```
+
+#### 2.1.2 启用按请求负载均衡策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"http1PerRequestLoadBalancing":true}}}' --type=merge
 ```
 
 #### 2.1.2 部署 Consul 微服务
@@ -53,7 +61,7 @@ spec:
     name: consul
 EOF
 
-WITH_MESH=true make deploy-consul-bookwarehouse
+WITH_MESH=true fsm_cluster_name=c1 replicas=2 make deploy-consul-httpbin
 ```
 
 ### 2.2 C2集群
@@ -68,7 +76,15 @@ kubecm switch k3d-C2
 fsm_cluster_name=C2 make deploy-fsm
 ```
 
-#### 2.2.2 部署 Consul 微服务
+#### 2.2.2 启用按请求负载均衡策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+```
+
+#### 2.2.3 部署 Consul 微服务
 
 ```bash
 make consul-deploy
@@ -100,7 +116,7 @@ spec:
     name: consul
 EOF
 
-WITH_MESH=true make deploy-consul-bookstore
+WITH_MESH=true fsm_cluster_name=c2 replicas=2 make deploy-consul-httpbin
 ```
 
 ### 2.3 C3集群
@@ -115,7 +131,15 @@ kubecm switch k3d-C3
 fsm_cluster_name=C3 make deploy-fsm
 ```
 
-#### 2.3.2 部署 Consul 微服务
+#### 2.3.2 启用按请求负载均衡策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"http1PerRequestLoadBalancing":true}}}' --type=merge
+```
+
+#### 2.3.3 部署 Consul 微服务
 
 ```bash
 make consul-deploy
@@ -147,7 +171,8 @@ spec:
     name: consul
 EOF
 
-WITH_MESH=true make deploy-consul-bookbuyer
+WITH_MESH=true fsm_cluster_name=c3 replicas=1 make deploy-consul-curl
+WITH_MESH=true fsm_cluster_name=c3 replicas=2 make deploy-consul-httpbin
 ```
 
 ## 3 微服务融合
@@ -158,7 +183,15 @@ WITH_MESH=true make deploy-consul-bookbuyer
 kubecm switch k3d-C1
 ```
 
-#### 3.1.1 部署 fgw
+#### 3.1.1 启用 fgw ProxyTag插件
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableGatewayProxyTag":true}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"proxyTag":{"srcHostHeader":"host","dstHostHeader":"fgw-forwarded-service"}}}}' --type=merge
+```
+
+#### 3.1.2 部署 fgw
 
 ```bash
 export fsm_namespace=fsm-system
@@ -200,7 +233,64 @@ export c1_fgw_pod_ip="$(kubectl get pod -n $fsm_namespace --selector app=fsm-gat
 echo c1_fgw_pod_ip $c1_fgw_pod_ip
 ```
 
-#### 3.1.2 部署 fgw connector
+#### 3.1.3 导入本集群 consul 微服务
+
+##### 3.1.3.1 创建 derive-local namespace
+
+```bash
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
+```
+
+##### 3.1.3.2 部署 consul connector(c1-consul-to-c1-derive-local)
+
+```
+kubectl apply  -f - <<EOF
+kind: ConsulConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c1-consul-to-c1-derive-local
+spec:
+  httpAddr: $c1_consul_cluster_ip:8500
+  deriveNamespace: derive-local
+  asInternalServices: true
+  syncToK8S:
+    enable: true
+    filterIpRanges:
+      - 10.101.1.0/24
+    withGateway: 
+      enable: true
+  syncFromK8S:
+    enable: false
+EOF
+```
+
+#### 3.1.4 部署 consul connector(c1-k8s-to-c3-consul)
+
+**c1 k8s微服务同步到c3 consul**
+
+```
+kubectl apply  -f - <<EOF
+kind: ConsulConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c1-k8s-to-c3-consul
+spec:
+  httpAddr: $c3_consul_external_ip:8500
+  deriveNamespace: none
+  syncToK8S:
+    enable: false
+  syncFromK8S:
+    enable: true
+    withGateway: 
+      enable: true
+    allowK8sNamespaces:
+      - derive-local
+EOF
+```
+
+#### 3.1.5 部署 fgw connector
 
 ```bash
 kubectl apply  -f - <<EOF
@@ -218,60 +308,7 @@ spec:
   syncToFgw:
     enable: true
     allowK8sNamespaces:
-      - derive-consul
-EOF
-```
-
-#### 3.1.3 创建 derive-consul namespace
-
-```bash
-kubectl create namespace derive-consul
-fsm namespace add derive-consul
-kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
-```
-
-#### 3.1.4 部署 consul connector(c1-consul-to-c1-derive-consul)
-
-```
-kubectl apply  -f - <<EOF
-kind: ConsulConnector
-apiVersion: connector.flomesh.io/v1alpha1
-metadata:
-  name: c1-consul-to-c1-derive-consul
-spec:
-  httpAddr: $c1_consul_cluster_ip:8500
-  deriveNamespace: derive-consul
-  asInternalServices: true
-  syncToK8S:
-    enable: true
-    withGateway: 
-      enable: true
-  syncFromK8S:
-    enable: false
-EOF
-```
-
-#### 3.1.5 部署 consul connector(c1-k8s-to-c2-consul)
-
-**c1 k8s微服务同步到c2 consul**
-
-```
-kubectl apply  -f - <<EOF
-kind: ConsulConnector
-apiVersion: connector.flomesh.io/v1alpha1
-metadata:
-  name: c1-k8s-to-c2-consul
-spec:
-  httpAddr: $c2_consul_external_ip:8500
-  deriveNamespace: none
-  syncToK8S:
-    enable: false
-  syncFromK8S:
-    enable: true
-    withGateway: 
-      enable: true
-    allowK8sNamespaces:
-      - derive-consul
+      - derive-local
 EOF
 ```
 
@@ -281,7 +318,15 @@ EOF
 kubecm switch k3d-C2
 ```
 
-#### 3.2.1 部署 fgw
+#### 3.2.1 启用 fgw ProxyTag插件
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableGatewayProxyTag":true}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"proxyTag":{"srcHostHeader":"host","dstHostHeader":"fgw-forwarded-service"}}}}' --type=merge
+```
+
+#### 3.2.2 部署 fgw
 
 ```bash
 export fsm_namespace=fsm-system
@@ -323,50 +368,32 @@ export c2_fgw_pod_ip="$(kubectl get pod -n $fsm_namespace --selector app=fsm-gat
 echo c2_fgw_pod_ip $c2_fgw_pod_ip
 ```
 
-#### 3.2.2 部署 fgw connector
+#### 3.2.3 导入本集群 consul 微服务
+
+##### 3.2.3.1 创建 derive-local namespace
 
 ```bash
-kubectl apply  -f - <<EOF
-kind: GatewayConnector
-apiVersion: connector.flomesh.io/v1alpha1
-metadata:
-  name: c2-fgw
-spec:
-  ingress:
-    ipSelector: ExternalIP
-    httpPort: 10080
-  egress:
-    ipSelector: ClusterIP
-    httpPort: 10090
-  syncToFgw:
-    enable: true
-    allowK8sNamespaces:
-      - derive-consul
-EOF
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
 ```
 
-#### 3.2.3 创建 derive-consul namespace
-
-```bash
-kubectl create namespace derive-consul
-fsm namespace add derive-consul
-kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
-```
-
-#### 3.2.4 部署 consul connector(c2-consul-to-c2-derive-consul)
+##### 3.2.3.2 部署 consul connector(c2-consul-to-c2-derive-local)
 
 ```
 kubectl apply  -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c2-consul-to-c2-derive-consul
+  name: c1-consul-to-c2-derive-local
 spec:
   httpAddr: $c2_consul_cluster_ip:8500
-  deriveNamespace: derive-consul
+  deriveNamespace: derive-local
   asInternalServices: true
   syncToK8S:
     enable: true
+    filterIpRanges:
+      - 10.102.1.0/24
     withGateway: 
       enable: true
   syncFromK8S:
@@ -374,7 +401,7 @@ spec:
 EOF
 ```
 
-#### 3.2.5 部署 consul connector(c2-k8s-to-c3-consul)
+#### 3.2.4 部署 consul connector(c2-k8s-to-c3-consul)
 
 **c2 k8s微服务同步到c3 consul**
 
@@ -394,7 +421,29 @@ spec:
     withGateway: 
       enable: true
     allowK8sNamespaces:
-      - derive-consul
+      - derive-local
+EOF
+```
+
+#### 3.2.5 部署 fgw connector
+
+```bash
+kubectl apply  -f - <<EOF
+kind: GatewayConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c2-fgw
+spec:
+  ingress:
+    ipSelector: ExternalIP
+    httpPort: 10080
+  egress:
+    ipSelector: ClusterIP
+    httpPort: 10090
+  syncToFgw:
+    enable: true
+    allowK8sNamespaces:
+      - derive-local
 EOF
 ```
 
@@ -404,7 +453,15 @@ EOF
 kubecm switch k3d-C3
 ```
 
-#### 3.3.1 部署 fgw
+#### 3.3.1 启用 fgw ProxyTag插件
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableGatewayProxyTag":true}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"proxyTag":{"srcHostHeader":"host","dstHostHeader":"fgw-forwarded-service"}}}}' --type=merge
+```
+
+#### 3.3.2 部署 fgw
 
 ```bash
 export fsm_namespace=fsm-system
@@ -446,7 +503,75 @@ export c3_fgw_pod_ip="$(kubectl get pod -n $fsm_namespace --selector app=fsm-gat
 echo c3_fgw_pod_ip $c3_fgw_pod_ip
 ```
 
-#### 3.3.2 部署 fgw connector
+#### 3.3.3 导入本集群 consul 微服务
+
+##### 3.3.3.1 创建 derive-local namespace
+
+```bash
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
+```
+
+##### 3.3.3.2 部署 consul connector(c3-consul-to-c3-derive-local)
+
+```
+kubectl apply  -f - <<EOF
+kind: ConsulConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c3-consul-to-c3-derive-local
+spec:
+  httpAddr: $c3_consul_cluster_ip:8500
+  deriveNamespace: derive-local
+  asInternalServices: true
+  syncToK8S:
+    enable: true
+    filterIpRanges:
+      - 10.103.1.0/24
+    withGateway: 
+      enable: true
+  syncFromK8S:
+    enable: false
+EOF
+```
+
+#### 3.3.4 导入其他集群 consul 微服务
+
+##### 3.3.4.1 创建 derive-other namespace
+
+```bash
+kubectl create namespace derive-other
+fsm namespace add derive-other
+kubectl patch namespace derive-other -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
+
+kubectl patch namespace derive-other -p '{"metadata":{"annotations":{"flomesh.io/cloud-service-attached-to":"derive-local"}}}'  --type=merge
+```
+
+##### 3.3.4.2 部署 consul connector(c3-consul-to-c3-derive-other)
+
+```
+kubectl apply  -f - <<EOF
+kind: ConsulConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c3-consul-to-c3-derive-other
+spec:
+  httpAddr: $c3_consul_cluster_ip:8500
+  deriveNamespace: derive-other
+  asInternalServices: false
+  syncToK8S:
+    enable: true
+    excludeIpRanges:
+      - 10.103.1.0/24
+    withGateway: 
+      enable: true
+  syncFromK8S:
+    enable: false
+EOF
+```
+
+#### 3.3.5 部署 fgw connector
 
 ```bash
 kubectl apply  -f - <<EOF
@@ -464,52 +589,134 @@ spec:
   syncToFgw:
     enable: true
     allowK8sNamespaces:
-      - derive-consul
+      - derive-local
+      - derive-other
 EOF
 ```
 
-#### 3.3.3 创建 derive-consul namespace
+## 4 优化策略
+
+### 4.1 C1集群
+
+#### 4.1.1 启用服务仅 IP访问模式
 
 ```bash
-kubectl create namespace derive-consul
-fsm namespace add derive-consul
-kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
+kubecm switch k3d-C1
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"serviceAccessMode":"ip"}}}' --type=merge
 ```
 
-#### 3.3.4 部署 consul connector(c3-consul-to-c3-derive-consul)
+#### 4.1.2 禁用 DNS 代理
 
-```
-kubectl apply  -f - <<EOF
-kind: ConsulConnector
-apiVersion: connector.flomesh.io/v1alpha1
-metadata:
-  name: c3-consul-to-c3-derive-consul
-spec:
-  httpAddr: $c3_consul_cluster_ip:8500
-  deriveNamespace: derive-consul
-  asInternalServices: true
-  syncToK8S:
-    enable: true
-    withGateway: 
-      enable: true
-  syncFromK8S:
-    enable: false
-EOF
+```bash
+kubecm switch k3d-C1
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"sidecar":{"localDNSProxy":{"enable": false}}}}' --type=merge
 ```
 
-## 4 确认服务调用效果
+### 4.2 C2集群
+
+#### 4.2.1 启用服务仅 IP访问模式
+
+```bash
+kubecm switch k3d-C2
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"serviceAccessMode":"ip"}}}' --type=merge
+```
+
+#### 4.2.2 禁用 DNS 代理
+
+```bash
+kubecm switch k3d-C2
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"sidecar":{"localDNSProxy":{"enable": false}}}}' --type=merge
+```
+
+### 4.3 C3集群
+
+#### 4.3.1 启用服务仅 IP访问模式
 
 ```bash
 kubecm switch k3d-C3
-
-PORT_FORWARD="14003:14001" make bookbuyer-port-forward &
-
-访问 
-http://127.0.0.1:14003
-确认运行效果
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"serviceAccessMode":"ip"}}}' --type=merge
 ```
 
-## 5 卸载 C1 C2 C3 三个集群
+#### 4.3.2 禁用 DNS 代理
+
+```bash
+kubecm switch k3d-C3
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"sidecar":{"localDNSProxy":{"enable": false}}}}' --type=merge
+```
+
+## 5 集群调度策略
+
+### 5.1 切换集群
+
+```bash
+kubecm switch k3d-C3
+export c3_curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
+echo c3_curl_pod_name $c3_curl_pod_name
+```
+
+### 5.2 查看集群调度策略
+
+```bash
+kubectl get meshconfigs -n fsm-system fsm-mesh-config -o jsonpath='{.spec.connector.lbType}'
+```
+
+### 5.3 FailOver
+
+#### 5.3.1 设置集群调度策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"connector":{"lbType":"FailOver"}}}' --type=merge
+```
+
+#### 5.3.2 确认服务调用效果
+
+**多次执行:**
+
+```bash
+kubectl exec -n curl $c3_curl_pod_name -c curl -- curl -s 127.0.0.1:14001
+```
+
+**正确返回结果类似于:**
+
+```bash
+c3-httpbin-5dd47d8645-ddhj5
+c3-httpbin-5dd47d8645-ddhj5
+c3-httpbin-5dd47d8645-ddhj5
+```
+
+### 5.4 ActiveActive
+
+#### 5.4.1 设置集群调度策略
+
+```bash
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"connector":{"lbType":"ActiveActive"}}}' --type=merge
+```
+
+#### 5.4.2 确认服务调用效果
+
+**多次执行:**
+
+```bash
+kubectl exec -n curl $c3_curl_pod_name -c curl -- curl -s 127.0.0.1:14001
+```
+
+**正确返回结果类似于:**
+
+```bash
+c3-httpbin-5dd47d8645-ddhj5
+c1-httpbin-5dd47d8645-mm2bg
+c2-httpbin-5dd47d8645-lsdh8
+```
+
+## 6 卸载 C1 C2 C3 三个集群
 
 ```bash
 export clusters="C1 C2 C3"

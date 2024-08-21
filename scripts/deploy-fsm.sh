@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 CTR_REGISTRY="${CTR_REGISTRY:-cybwan}"
-CTR_TAG="${CTR_TAG:-1.3.7}"
+CTR_TAG="${CTR_TAG:-1.3.8-alpha.4}"
 IMAGE_PULL_POLICY="${IMAGE_PULL_POLICY:-Always}"
 
 fsm_namespace="${fsm_namespace:-fsm-system}"
@@ -23,6 +23,8 @@ fsm install \
     --set=fsm.image.tag="$CTR_TAG" \
     --set=fsm.image.pullPolicy="$IMAGE_PULL_POLICY" \
     --set=fsm.sidecar.sidecarLogLevel=warn \
+    --set=fsm.sidecar.image.registry="$CTR_REGISTRY" \
+    --set=fsm.repoServer.image.registry="$CTR_REGISTRY" \
     --set=fsm.controllerLogLevel=warn \
     --set=fsm.serviceAccessMode=mixed \
     --set=fsm.featureFlags.enableAutoDefaultRoute=true \
@@ -32,6 +34,7 @@ fsm install \
     --set=clusterSet.name="$fsm_cluster_name" \
     --set fsm.fsmIngress.enabled=false \
     --set fsm.fsmGateway.enabled=true \
+    --set fsm.fsmGateway.fgwLogLevel=debug \
     --set=fsm.localDNSProxy.enable=true \
     --set=fsm.localDNSProxy.wildcard.enable=false \
     --set=fsm.localDNSProxy.primaryUpstreamDNSServerIPAddr=$dns_svc_ip \

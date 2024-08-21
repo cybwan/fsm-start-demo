@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: eureka-bookwarehouse-application-yml
+  name: eureka-curl-application-yml
 data:
   application.yml: |
     spring:
@@ -10,7 +10,7 @@ data:
         default:
           - "eureka"
       application:
-        name: bookwarehouse
+        name: curl
     logging:
       level:
         org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
@@ -51,19 +51,19 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bookwarehouse
+  name: ${cluster}-curl
   labels:
     version: v1
 spec:
-  replicas: 1
+  replicas: ${replicas}
   selector:
     matchLabels:
-      app: bookwarehouse
+      app: curl
       version: v1
   template:
     metadata:
       labels:
-        app: bookwarehouse
+        app: curl
         version: v1
       annotations:
           prometheus.io/scrape: "true"
@@ -71,7 +71,7 @@ spec:
           prometheus.io/port: "14001"
     spec:
       containers:
-        - name: bookwarehouse
+        - name: curl
           image: cybwan/springboot-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
@@ -80,20 +80,20 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: 'eureka'
             - name: IDENTITY
-              value: bookwarehouse
+              value: curl
             - name: EUREKA_INSTANCE_METADATAMAP_VERSION
               value: v1
             - name: JAVA_OPTS
               value: -Xms256M -Xmx512M
             - name: JAVA_TOOL_OPTIONS
-              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=bookwarehouse
+              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=curl
           command: ['java']
           args: [
             "-Dotel.traces.exporter=none",
             "-Dotel.metrics.exporter=none",
             "-Dotel.propagators=tracecontext,baggage,b3multi",
             "-jar",
-            "bookwarehouse-eureka.jar",
+            "curl-eureka.jar",
           ]
           volumeMounts:
             - mountPath: /config
@@ -113,7 +113,7 @@ spec:
       volumes:
         - name: javacfg
           configMap:
-            name: eureka-bookwarehouse-application-yml
+            name: eureka-curl-application-yml
             items:
               - key: "application.yml"
                 path: "application.yml"

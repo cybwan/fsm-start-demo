@@ -42,7 +42,7 @@ data:
     eureka:
       client:
         serviceUrl:
-          defaultZone: http://eureka.default.svc:8761/eureka/
+          defaultZone: http://eureka.default:8761/eureka/
     spring:
       config:
         activate:
@@ -73,6 +73,7 @@ spec:
       containers:
         - name: bookstore
           image: cybwan/springboot-demo:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001
           env:

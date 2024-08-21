@@ -2,15 +2,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: eureka-bookwarehouse-application-yml
+  name: consul-httpbin-application-yml
 data:
   application.yml: |
     spring:
       profiles:
         default:
-          - "eureka"
+          - "consul"
       application:
-        name: bookwarehouse
+        name: httpbin
     logging:
       level:
         org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
@@ -28,42 +28,50 @@ data:
     spring:
       config:
         activate:
-          on-profile: eureka
-  application-eureka.yml: |
-    eureka:
-      client:
-        registerWithEureka: true
-        fetchRegistry: true
-        gZipContent: false
-      instance:
-        prefer-ip-address: true
-        instance-id: ${spring.application.name}:${random.value}
-    ---
-    eureka:
-      client:
-        serviceUrl:
-          defaultZone: http://eureka.default:8761/eureka/
+          on-profile: consul
+  application-consul.yml: |
     spring:
+      cloud:
+        consul:
+          discovery:
+            instance-id: ${spring.application.name}:${random.value}
+            prefer-ip-address: true
+            healthCheckPath: /actuator/health
+            healthCheckInterval: 5s
+  bootstrap-consul.yml: |
+    spring:
+      cloud:
+        consul:
+          config:
+            enabled: false
+    ---
+    # Prod Profile Configuration
+    spring:
+      cloud:
+        consul:
+          host: consul.default
+          port: 8500
+      zone: prod
       config:
         activate:
-          on-profile: eureka
+          on-profile: consul
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bookwarehouse
+  name: ${cluster}-httpbin
   labels:
     version: v1
 spec:
-  replicas: 1
+  replicas: ${replicas}
   selector:
     matchLabels:
-      app: bookwarehouse
+      app: httpbin
       version: v1
   template:
     metadata:
       labels:
-        app: bookwarehouse
+        app: httpbin
         version: v1
       annotations:
           prometheus.io/scrape: "true"
@@ -71,29 +79,31 @@ spec:
           prometheus.io/port: "14001"
     spec:
       containers:
-        - name: bookwarehouse
+        - name: httpbin
           image: cybwan/springboot-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: 'eureka'
+              value: 'consul'
             - name: IDENTITY
-              value: bookwarehouse
+              value: httpbin
+            - name: SPRING_CLOUD_CONSUL_DISCOVERY_TAGS
+              value: "version=v1"
             - name: EUREKA_INSTANCE_METADATAMAP_VERSION
               value: v1
             - name: JAVA_OPTS
               value: -Xms256M -Xmx512M
             - name: JAVA_TOOL_OPTIONS
-              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=bookwarehouse
+              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=httpbin
           command: ['java']
           args: [
             "-Dotel.traces.exporter=none",
             "-Dotel.metrics.exporter=none",
             "-Dotel.propagators=tracecontext,baggage,b3multi",
             "-jar",
-            "bookwarehouse-eureka.jar",
+            "httpbin-consul.jar",
           ]
           volumeMounts:
             - mountPath: /config
@@ -113,9 +123,11 @@ spec:
       volumes:
         - name: javacfg
           configMap:
-            name: eureka-bookwarehouse-application-yml
+            name: consul-httpbin-application-yml
             items:
               - key: "application.yml"
                 path: "application.yml"
-              - key: "application-eureka.yml"
-                path: "application-eureka.yml"
+              - key: "application-consul.yml"
+                path: "application-consul.yml"
+              - key: "bootstrap-consul.yml"
+                path: "bootstrap-consul.yml"
