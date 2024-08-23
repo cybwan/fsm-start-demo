@@ -634,7 +634,15 @@ kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"sidec
 
 ### 4.3 C3集群
 
-#### 4.3.1 启用服务仅 IP访问模式
+#### 4.3.1 禁用 DNS 代理
+
+```bash
+kubecm switch k3d-C3
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"sidecar":{"localDNSProxy":{"enable": false}}}}' --type=merge
+```
+
+#### 4.3.2 启用服务仅 IP访问模式
 
 ```bash
 kubecm switch k3d-C3
@@ -642,12 +650,44 @@ export fsm_namespace=fsm-system
 kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"serviceAccessMode":"ip"}}}' --type=merge
 ```
 
-#### 4.3.2 禁用 DNS 代理
+#### 4.3.3 启用服务仅 服务名访问模式
 
 ```bash
 kubecm switch k3d-C3
 export fsm_namespace=fsm-system
-kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"sidecar":{"localDNSProxy":{"enable": false}}}}' --type=merge
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"serviceAccessMode":"domain"}}}' --type=merge
+```
+
+#### 4.3.4 关闭服务名TrustDomain 后缀
+
+```bash
+kubecm switch k3d-C3
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"serviceAccessNames":{"withTrustDomain":false}}}}' --type=merge
+```
+
+#### 4.3.5 禁用不带端口号服务名
+
+```bash
+kubecm switch k3d-C3
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"serviceAccessNames":{"mustWithServicePort":true}}}}' --type=merge
+```
+
+#### 4.3.6 禁用带 Namespace 的云服务名
+
+```bash
+kubecm switch k3d-C3
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"serviceAccessNames":{"cloud":{"withNamespace":false}}}}}' --type=merge
+```
+
+#### 4.3.7 启用服务去重模式
+
+```bash
+kubecm switch k3d-C3
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableSidecarPrettyConfig":false}}}' --type=merge
 ```
 
 ## 5 集群调度策略
