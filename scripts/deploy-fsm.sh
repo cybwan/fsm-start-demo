@@ -27,16 +27,18 @@ fsm install \
     --set=fsm.repoServer.image.registry="$CTR_REGISTRY" \
     --set=fsm.controllerLogLevel=warn \
     --set=fsm.serviceAccessMode=mixed \
-    --set=fsm.featureFlags.enableAutoDefaultRoute=true \
+    --set=fsm.featureFlags.enableAutoDefaultRoute=false \
     --set=clusterSet.region=LN \
     --set=clusterSet.zone=DL \
     --set=clusterSet.group=FLOMESH \
     --set=clusterSet.name="$fsm_cluster_name" \
     --set fsm.fsmIngress.enabled=false \
     --set fsm.fsmGateway.enabled=true \
-    --set fsm.fsmGateway.fgwLogLevel=debug \
+    --set fsm.fsmGateway.fgwLogLevel=warn \
     --set=fsm.localDNSProxy.enable=true \
-    --set=fsm.localDNSProxy.wildcard.enable=false \
+    --set=fsm.localDNSProxy.wildcard.enable=true \
+    --set=fsm.localDNSProxy.wildcard.ips[0].ipv4="1.1.1.1" \
+    --set=fsm.localDNSProxy.wildcard.los[0].ipv4="127.0.0.1" \
     --set=fsm.localDNSProxy.primaryUpstreamDNSServerIPAddr=$dns_svc_ip \
     --set fsm.featureFlags.enableValidateHTTPRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGRPCRouteHostnames=false \

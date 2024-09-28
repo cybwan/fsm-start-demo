@@ -53,6 +53,9 @@ spec:
 EOF
 #
 
+#export fsm_namespace=fsm-system
+#kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableSidecarPrettyConfig":false}}}' --type=merge
+
 ## 3 微服务融合
 
 ### 3.1 C1 集群
@@ -89,16 +92,16 @@ EOF
 
 sleep 2
 
-kubectl wait --all --for=condition=ready pod -n "$fsm_namespace" -l app=svclb-fsm-gateway-fsm-system-tcp --timeout=180s
+kubectl wait --all --for=condition=ready pod -n "$fsm_namespace" -l app=fsm-gateway --timeout=180s
 
-until kubectl get service/fsm-gateway-fsm-system-tcp -n $fsm_namespace --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+until kubectl get service/fsm-gateway-fsm-system-k8s-c1-fgw-tcp -n $fsm_namespace --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
-kubectl patch AccessControl -n fsm-policy global --type=json -p='[{"op": "add", "path": "/spec/sources/-", "value": {"kind":"Service","namespace":"fsm-system","name":"fsm-gateway-fsm-system-tcp"}}]'
+kubectl patch AccessControl -n fsm-policy global --type=json -p='[{"op": "add", "path": "/spec/sources/-", "value": {"kind":"Service","namespace":"fsm-system","name":"fsm-gateway-fsm-system-k8s-c1-fgw-tcp"}}]'
 
-export c1_fgw_cluster_ip="$(kubectl get svc -n $fsm_namespace --field-selector metadata.name=fsm-gateway-fsm-system-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
+export c1_fgw_cluster_ip="$(kubectl get svc -n $fsm_namespace --field-selector metadata.name=fsm-gateway-fsm-system-k8s-c1-fgw-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c1_fgw_cluster_ip $c1_fgw_cluster_ip
 
-export c1_fgw_external_ip="$(kubectl get svc -n $fsm_namespace --field-selector metadata.name=fsm-gateway-fsm-system-tcp -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+export c1_fgw_external_ip="$(kubectl get svc -n $fsm_namespace --field-selector metadata.name=fsm-gateway-fsm-system-k8s-c1-fgw-tcp -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
 echo c1_fgw_external_ip $c1_fgw_external_ip
 
 export c1_fgw_pod_ip="$(kubectl get pod -n $fsm_namespace --selector app=fsm-gateway -o jsonpath='{.items[0].status.podIP}')"
@@ -114,6 +117,14 @@ apiVersion: connector.flomesh.io/v1alpha1
 metadata:
   name: c1-fgw
 spec:
+  gatewayName: k8s-c1-fgw
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2048M
+    requests:
+      cpu: 512m
+      memory: 1024M
   ingress:
     ipSelector: ExternalIP
     httpPort: 10080
@@ -144,6 +155,13 @@ apiVersion: connector.flomesh.io/v1alpha1
 metadata:
   name: c1-eureka-to-c1-derive-eureka
 spec:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2048M
+    requests:
+      cpu: 512m
+      memory: 1024M
   httpAddr: http://$c1_eureka_cluster_ip:8761/eureka
   deriveNamespace: derive-eureka
   asInternalServices: false
@@ -155,6 +173,8 @@ spec:
     enable: false
 EOF
 #
+
+WITH_MESH=true fsm_cluster_name=c1 make deploy-eureka-httpbin
 
 #### 3.1.5 压力测试
 
