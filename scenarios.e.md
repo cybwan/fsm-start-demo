@@ -693,6 +693,98 @@ export fsm_namespace=fsm-system
 kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableSidecarPrettyConfig":false}}}' --type=merge
 ```
 
+#### 4.3.8 启用fgw日志插件
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: ListenerFilter
+metadata:
+  name: k8s-c3-fgw-accesslog
+  namespace: fsm-system
+spec:
+  type: AccessLog
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: k8s-c3-fgw
+      port: 10090
+EOF
+```
+
+#### 4.3.9 启用fgw ProxyTag插件
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: FilterDefinition
+metadata:
+ name: proxytag-def
+spec:
+  scope: Listener
+  protocol: tcp
+  type: ProxyTag
+  script: |
+    export default function (config) {
+      var proxyTag = (config.proxyTag?.dstHostHeader || 'proxy-tag').toLowerCase()
+      var origHost = (config.proxyTag?.srcHostHeader || 'orig-host').toLowerCase()
+
+      return pipeline(\$=>\$
+        .demuxHTTP().to(\$=>\$
+          .handleMessageStart(
+            msg => {
+              var headers = msg.head.headers
+              var tag = headers[proxyTag]
+              if (tag) {
+                headers[origHost] = headers.host
+                headers.host = tag
+              } else if (headers['fgw-target-service']) {
+                headers[proxyTag] = headers['fgw-target-service']
+              } else {
+                headers[proxyTag] = headers.host
+              }
+            }
+          )
+          .pipeNext()
+        )
+      )
+    }
+EOF
+
+kubectl apply -n fsm-system -f - <<EOF
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: FilterConfig
+metadata:
+ name:  proxytag-fc
+spec:
+  config: |
+    proxyTag:
+      dstHostHeader: "fgw-forwarded-service"
+      srcHostHeader: ""
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: ListenerFilter
+metadata:
+ name: proxytag
+spec:
+ type: ProxyTag
+ targetRefs:
+   - group: gateway.networking.k8s.io
+     kind: Gateway
+     name: k8s-c3-fgw
+     port: 10090
+ definitionRef:
+   group: extension.gateway.flomesh.io
+   kind: FilterDefinition
+   name: proxytag-def
+ configRef:
+   group: extension.gateway.flomesh.io
+   kind: FilterConfig
+   name: proxytag-fc
+EOF
+```
+
 ## 5 集群调度策略
 
 ### 5.1 切换集群
