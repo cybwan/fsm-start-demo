@@ -22,11 +22,12 @@ fsm install \
     --set=fsm.image.registry="$CTR_REGISTRY" \
     --set=fsm.image.tag="$CTR_TAG" \
     --set=fsm.image.pullPolicy="$IMAGE_PULL_POLICY" \
+    --set=fsm.trafficInterceptionMode=ebpf \
     --set=fsm.sidecar.sidecarLogLevel=warn \
     --set=fsm.sidecar.compressConfig=false \
     --set=fsm.sidecar.image.registry="$CTR_REGISTRY" \
     --set=fsm.repoServer.image.registry="$CTR_REGISTRY" \
-    --set=fsm.controllerLogLevel=warn \
+    --set=fsm.controllerLogLevel=debug \
     --set=fsm.serviceAccessMode=mixed \
     --set=fsm.featureFlags.enableAutoDefaultRoute=false \
     --set=clusterSet.region=LN \

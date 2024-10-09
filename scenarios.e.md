@@ -3,7 +3,7 @@
 ## 1 部署 C1 C2 C3 三个集群
 
 ```bash
-export clusters="C1 C2 C3"
+export clusters="C1"
 make k3d-up
 ```
 
@@ -854,6 +854,6 @@ c2-httpbin-5dd47d8645-lsdh8
 ## 6 卸载 C1 C2 C3 三个集群
 
 ```bash
-export clusters="C1 C2 C3"
+export clusters="C1 C2 "
 make k3d-reset
 ```
