@@ -57,7 +57,6 @@ if ! docker network ls --format "{{ .Name}}" | grep -q "^$K3D_NETWORK"; then doc
 k3d cluster create \
 --k3s-arg "--cluster-cidr=10.$subnet.1.0/24@server:*" \
 --k3s-arg "--service-cidr=10.$subnet.2.0/24@server:*" \
---env 'K3D_FIX_MOUNTS=1@server:*' \
 --config - <<EOF
 apiVersion: k3d.io/v1alpha5
 kind: Simple
