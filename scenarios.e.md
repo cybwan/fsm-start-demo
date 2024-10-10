@@ -761,7 +761,7 @@ spec:
   config: |
     proxyTag:
       dstHostHeader: "fgw-forwarded-service"
-      srcHostHeader: ""
+      srcHostHeader: "host"
 ---
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: ListenerFilter
