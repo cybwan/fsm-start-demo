@@ -46,6 +46,5 @@ fsm install \
     --set fsm.featureFlags.enableValidateGRPCRouteHostnames=false \
     --set fsm.featureFlags.enableValidateTLSRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGatewayListenerHostname=false \
-    --set fsm.featureFlags.enableGatewayProxyTag=false \
     --set=fsm.featureFlags.enableSidecarPrettyConfig=true \
     --timeout=900s
