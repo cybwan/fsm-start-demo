@@ -25,6 +25,11 @@ k3d-reset:
 deploy-fsm:
 	$fsm_cluster_name=$(fsm_cluster_name) scripts/deploy-fsm.sh
 
+.PHONY: mount-debugfs
+mount-debugfs:
+	export INTERCEPTOR_POD=$$(kubectl get pods --selector app=fsm-interceptor -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl exec -n fsm-system "$$INTERCEPTOR_POD" -- mount -t debugfs debugfs /sys/kernel/debug
+
 .PHONY: tail-interceptor
 tail-interceptor:
 	export INTERCEPTOR_POD=$$(kubectl get pods --selector app=fsm-interceptor -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\

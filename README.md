@@ -53,7 +53,3 @@ make k3d-reset
 
 
 
-```json
-{"level":"error","component":"cni-plugin","time":"2024-10-10T05:20:10Z","file":"plugin.go:183","message":"fsm-cni cmdDelete failed to parse config {\"cniVersion\":\"0.3.1\",\"kubernetes\":{\"kubeconfig\":\"/etc/cni/net.d/ZZZ-fsm-cni-kubeconfig\"},\"name\":\"cbr0\",\"type\":\"fsm-cni\"} <nil>"}
-```
-
