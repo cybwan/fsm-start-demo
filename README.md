@@ -42,6 +42,12 @@ kubectl exec ${curl_client} -n ebpf -c curl -- curl -s pipy-ok:8080
 
 mount -t debugfs debugfs /sys/kernel/debug
 cat /sys/kernel/debug/tracing/trace_pipe|grep bpf_trace_printk
+
+kubectl rollout restart deployment -n ebpf curl 
+
+kubectl node-shell k3d-c1-server-0 -- cat /tmp/fsm-cni.log
+
+kubectl node-shell k3d-c1-server-0 -- sh
 ```
 
 ## 6 卸载 C1 C2 C3 三个集群
@@ -52,4 +58,29 @@ make k3d-reset
 ```
 
 
+
+```yaml
+          command:
+            - /app/fsm-interceptor
+          args:
+            - '--verbosity'
+            - debug
+            - '--fsm-namespace'
+            - fsm-system
+            - '--fsm-version'
+            - v1.4.0
+            - '--mesh-name'
+            - fsm
+            - '--trust-domain'
+            - cluster.local
+            - '--cni-mode=true'
+            - '--kind=false'
+            - '--kernel-tracing=true'
+
+
+          command:
+            - sleep
+          args:
+            - 365d
+```
 
