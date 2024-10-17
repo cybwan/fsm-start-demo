@@ -48,6 +48,9 @@ kubectl rollout restart deployment -n ebpf curl
 kubectl node-shell k3d-c1-server-0 -- cat /tmp/fsm-cni.log
 
 kubectl node-shell k3d-c1-server-0 -- sh
+
+tc qdisc add dev ens33 clsact
+tc filter add dev ens33 ingress bpf object-pinned /sys/fs/bpf/mesh/tc_inbound_ingress
 ```
 
 ## 6 卸载 C1 C2 C3 三个集群
