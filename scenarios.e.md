@@ -61,7 +61,7 @@ spec:
     name: consul
 EOF
 
-WITH_MESH=true fsm_cluster_name=c1 replicas=2 make deploy-consul-httpbin
+WITH_MESH=true fsm_cluster_name=c1 replicas=1 make deploy-consul-httpbin
 ```
 
 ### 2.2 C2集群
@@ -116,7 +116,7 @@ spec:
     name: consul
 EOF
 
-WITH_MESH=true fsm_cluster_name=c2 replicas=2 make deploy-consul-httpbin
+WITH_MESH=true fsm_cluster_name=c2 replicas=1 make deploy-consul-httpbin
 ```
 
 ### 2.3 C3集群
@@ -172,7 +172,7 @@ spec:
 EOF
 
 WITH_MESH=true fsm_cluster_name=c3 replicas=1 make deploy-consul-curl
-WITH_MESH=true fsm_cluster_name=c3 replicas=2 make deploy-consul-httpbin
+WITH_MESH=true fsm_cluster_name=c3 replicas=1 make deploy-consul-httpbin
 ```
 
 ## 3 微服务融合
@@ -186,9 +186,38 @@ kubecm switch k3d-C1
 #### 3.1.1 启用 fgw ProxyTag插件
 
 ```bash
-export fsm_namespace=fsm-system
-kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableGatewayProxyTag":true}}}' --type=merge
-kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"proxyTag":{"srcHostHeader":"host","dstHostHeader":"fgw-forwarded-service"}}}}' --type=merge
+kubectl apply -n fsm-system -f - <<EOF
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: FilterConfig
+metadata:
+ name:  proxytag-fc
+spec:
+  config: |
+    proxyTag:
+      dstHostHeader: "fgw-forwarded-service"
+      srcHostHeader: "host"
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: ListenerFilter
+metadata:
+ name: proxytag
+spec:
+ type: ProxyTag
+ targetRefs:
+   - group: gateway.networking.k8s.io
+     kind: Gateway
+     name: k8s-c3-fgw
+     port: 10090
+ definitionRef:
+   group: extension.gateway.flomesh.io
+   kind: FilterDefinition
+   name: proxytag-def
+ configRef:
+   group: extension.gateway.flomesh.io
+   kind: FilterConfig
+   name: proxytag-fc
+EOF
 ```
 
 #### 3.1.2 部署 fgw
@@ -216,6 +245,8 @@ spec:
         namespaces:
           from: All
 EOF
+
+sleep 3
 
 kubectl wait --all --for=condition=ready pod -n "$fsm_namespace" -l app=fsm-gateway --timeout=180s
 
@@ -322,9 +353,38 @@ kubecm switch k3d-C2
 #### 3.2.1 启用 fgw ProxyTag插件
 
 ```bash
-export fsm_namespace=fsm-system
-kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableGatewayProxyTag":true}}}' --type=merge
-kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"proxyTag":{"srcHostHeader":"host","dstHostHeader":"fgw-forwarded-service"}}}}' --type=merge
+kubectl apply -n fsm-system -f - <<EOF
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: FilterConfig
+metadata:
+ name:  proxytag-fc
+spec:
+  config: |
+    proxyTag:
+      dstHostHeader: "fgw-forwarded-service"
+      srcHostHeader: "host"
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: ListenerFilter
+metadata:
+ name: proxytag
+spec:
+ type: ProxyTag
+ targetRefs:
+   - group: gateway.networking.k8s.io
+     kind: Gateway
+     name: k8s-c3-fgw
+     port: 10090
+ definitionRef:
+   group: extension.gateway.flomesh.io
+   kind: FilterDefinition
+   name: proxytag-def
+ configRef:
+   group: extension.gateway.flomesh.io
+   kind: FilterConfig
+   name: proxytag-fc
+EOF
 ```
 
 #### 3.2.2 部署 fgw
@@ -352,6 +412,8 @@ spec:
         namespaces:
           from: All
 EOF
+
+sleep 3
 
 kubectl wait --all --for=condition=ready pod -n "$fsm_namespace" -l app=fsm-gateway --timeout=180s
 
@@ -458,9 +520,38 @@ kubecm switch k3d-C3
 #### 3.3.1 启用 fgw ProxyTag插件
 
 ```bash
-export fsm_namespace=fsm-system
-kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableGatewayProxyTag":true}}}' --type=merge
-kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"gatewayAPI":{"proxyTag":{"srcHostHeader":"host","dstHostHeader":"fgw-forwarded-service"}}}}' --type=merge
+kubectl apply -n fsm-system -f - <<EOF
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: FilterConfig
+metadata:
+ name:  proxytag-fc
+spec:
+  config: |
+    proxyTag:
+      dstHostHeader: "fgw-forwarded-service"
+      srcHostHeader: "host"
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: ListenerFilter
+metadata:
+ name: proxytag
+spec:
+ type: ProxyTag
+ targetRefs:
+   - group: gateway.networking.k8s.io
+     kind: Gateway
+     name: k8s-c3-fgw
+     port: 10090
+ definitionRef:
+   group: extension.gateway.flomesh.io
+   kind: FilterDefinition
+   name: proxytag-def
+ configRef:
+   group: extension.gateway.flomesh.io
+   kind: FilterConfig
+   name: proxytag-fc
+EOF
 ```
 
 #### 3.3.2 部署 fgw
@@ -488,6 +579,8 @@ spec:
         namespaces:
           from: All
 EOF
+
+sleep 3
 
 kubectl wait --all --for=condition=ready pod -n "$fsm_namespace" -l app=fsm-gateway --timeout=180s
 
