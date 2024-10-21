@@ -688,9 +688,9 @@ spec:
 EOF
 ```
 
-## 5 服务调用效果
+## 4 服务调用效果
 
-### 5.1 切换集群
+### 4.1 切换集群
 
 ```bash
 kubecm switch k3d-C3
@@ -698,7 +698,7 @@ export c3_curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpa
 echo c3_curl_pod_name $c3_curl_pod_name
 ```
 
-### 5.2 确认服务调用效果
+### 4.2 确认服务调用效果
 
 **多次执行:**
 
@@ -719,9 +719,15 @@ c3-httpbin-5dd47d8645-2rrx8
 c2-httpbin-5dd47d8645-bp8sk
 ```
 
-## 6 卸载 C1 C2 C3 三个集群
+## 5 卸载 C1 C2 C3 三个集群
 
 ```bash
 export clusters="C1 C2 C3"
 make k3d-reset
 ```
+
+## 6 注意事项
+
+- 导入的微服务,如果作为备用服务参与了 FailOver, 则不能再参与 TrafficSplit
+- 推荐使用服务名服务访问方式, 不推荐 IP 访问方式
+- 如果同名服务以多个 k8s 服务的形式存在, 需要对每个 k8s 服务都要做 TrafficSplit 策略
