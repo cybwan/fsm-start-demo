@@ -1,2 +1,1 @@
-# fsm-start-demo
-fsm-start-demo
+# fsm-v1.2-demo

@@ -31,7 +31,6 @@ fi
 
 api_port=7443
 port=8080
-subnet=101
 
 cluster_list="$clusters"
 
@@ -51,19 +50,8 @@ do
   echo "Creating cluster '$K3D_CLUSTER_NAME'..."
   echo "------------------------------------------------------------"
 
-if ! docker network ls --format "{{ .Name}}" | grep -q "^$K3D_NETWORK"; then docker network create --driver=bridge --subnet=172.22.0.0/16 --gateway=172.22.0.1 $K3D_NETWORK; fi
-
   # create cluster
-k3d cluster create \
- --env HTTP_PROXY=${http_proxy}@server:* \
- --env HTTPS_PROXY=${https_proxy}@server:* \
- --env http_proxy=${http_proxy}@server:* \
- --env https_proxy=${https_proxy}@server:* \
- --env NO_PROXY=localhost,127.0.0.1,localaddress,.localdomain.com@server:* \
- --env no_proxy=localhost,127.0.0.1,localaddress,.localdomain.com@server:* \
---k3s-arg "--cluster-cidr=10.$subnet.1.0/24@server:*" \
---k3s-arg "--service-cidr=10.$subnet.2.0/24@server:*" \
---config - <<EOF
+k3d cluster create --config - <<EOF
 apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
@@ -107,6 +95,5 @@ EOF
 
   ((api_port=api_port+1))
   ((port=port+1))
-  ((subnet=subnet+1))
   echo "------------------------------------------------------------"
 done

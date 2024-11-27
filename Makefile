@@ -1,28 +1,47 @@
-#!make
+#!/bin/bash
 
-WITH_MESH ?= false
-WITH_PROXY ?=
-COUNT ?= 1000
+CTR_REGISTRY ?= flomesh
+CTR_TAG      ?= latest
+CTR_REPO     ?= https://raw.githubusercontent.com/cybwan/fsm-start-demo/main
 
-K3D_HOST_IP ?= 192.168.127.91
+ARCH_MAP_x86_64 := amd64
+ARCH_MAP_arm64 := arm64
+ARCH_MAP_aarch64 := arm64
 
-fsm_cluster_name ?= fsm
-replicas ?= 1
+BUILDARCH := $(ARCH_MAP_$(shell uname -m))
+BUILDOS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
-.PHONY: k3d-up
-k3d-up:
-	./scripts/k3d-with-registry-multicluster$(WITH_PROXY).sh
-	kubecm list
+TARGETS := $(BUILDOS)/$(BUILDARCH)
+DOCKER_BUILDX_PLATFORM := $(BUILDOS)/$(BUILDARCH)
 
-.PHONY: k3d-proxy-up
-k3d-proxy-up:
-	./scripts/k3d-with-registry-multicluster-with-proxy.sh
-	kubecm list
+FSM_HOME ?= $(abspath ../fsm)
 
-.PHONY: k3d-reset
-k3d-reset:
-	./scripts/k3d-multicluster-cleanup.sh
+egress-gateway:
+	scripts/deploy-egress-gateway-demo.sh
 
-.PHONY: deploy-fsm
-deploy-fsm:
-	$fsm_cluster_name=$(fsm_cluster_name) scripts/deploy-fsm.sh
+udp-echo:
+	scripts/deploy-udp-echo-demo.sh
+
+ingress-nginx:
+	scripts/deploy-ingress-nginx-demo.sh
+
+switch-fsm-image-registry-flomesh:
+	scripts/switch-fsm-image-registry.sh flomesh
+
+switch-fsm-image-registry-cybwan:
+	scripts/switch-fsm-image-registry.sh cybwan
+
+switch-fsm-image-registry-local:
+	scripts/switch-fsm-image-registry.sh localhost:5000/flomesh
+
+switch-fsm-image-registry:
+	scripts/switch-fsm-image-registry.sh $(CTR_REGISTRY)
+
+switch-fsm-image-tag:
+	scripts/switch-fsm-image-tag.sh $(CTR_TAG)
+
+switch-fsm-demo-repo:
+	scripts/switch-fsm-demo-repo.sh $(CTR_REPO)
+
+switch-fsm-demo-repo-local:
+	scripts/switch-fsm-demo-repo.sh .
