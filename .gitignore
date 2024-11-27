@@ -1,6 +1,9 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
+.settings/
+.vscode/
+tsconfig.json
+jsconfig.json
+
+### Go ###
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -8,18 +11,75 @@
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
+# Test binary, build with `go test -c`
 *.test
 
-# Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+.glide/
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+#dlv binaries
+debug
 
-# Go workspace file
-go.work
-go.work.sum
+### Vim ###
+# Swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
 
-# env file
+# IntelliJ / Goland
+.idea/
+
+# Emacs
+*~
+*#*
+
+/bin/
+build/
+.dev/
 .env
+.envrc
+_dist/
+
+creds.json
+screenlog.*
+demo/bin/
+*.tgz
+# dependency charts pulled by Helm
+!**/charts/*.tgz
+
+## Ignore test coverage files
+coverage.json
+coverage.txt
+coverage.txt.with_generated_code
+coverage.xml
+coverage/
+report.xml
+testoutput.txt
+
+# Certificates etc
+*.pem
+*.bk
+./certs/
+commit_logs
+bootstrap.yaml
+
+# Test result folders
+test-[0-9]*/
+bm_profiles/
+
+# hugo static site generator
+.DS_Store
+.sass-cache/
+.yarnclean
+.publish/*
+.publish/
+public/*
+docs/public/*
+node_modules/
+vendor/
+rootfs/
+
+# Interim files that can stick around from a bad mockgen run.
+gomock_reflect_*/
