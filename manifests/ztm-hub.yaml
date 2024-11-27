@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ztm-hub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ztm-hub
+  template:
+    metadata:
+      labels:
+        app: ztm-hub
+    spec:
+      containers:
+        - name: ztm-hub
+          image: cybwan/ztm-hub:0.2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8888
+          command: [ 'ztm' ]
+          args: [
+            "run",
+            "hub",
+            "--listen",
+            "0.0.0.0:8888",
+            "--names",
+            "${names}:8888",
+            "--permit",
+            "fsm.perm.json",
+          ]
