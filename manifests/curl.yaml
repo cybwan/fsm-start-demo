@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curl
+  template:
+    metadata:
+      labels:
+        app: curl
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - name: curl
+        image: cybwan/ubuntu:22.04
+        imagePullPolicy: IfNotPresent
+        command: [ "sleep", "365d" ]

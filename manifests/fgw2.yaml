@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fgw2
+  labels:
+    app: fgw2
+spec:
+  selector:
+    matchLabels:
+      name: fgw2
+  template:
+    metadata:
+      labels:
+        name: fgw2
+        app: fsm-gateway
+        gateway.flomesh.io/ns: fsm-system
+    spec:
+      containers:
+        - name: outbound
+          image: flomesh/pipy-nightly:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http-outbound-1
+              containerPort: 15001
+          command:
+            - pipy
+            - -e
+            - |
+              pipy()
+              .listen(15001)
+              .serveHTTP(new Message('hi, it works as fgw2 outbound listener.\n'))
+        - name: inbound
+          image: flomesh/pipy-nightly:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http-inbound-1
+              containerPort: 15003
+          command:
+            - pipy
+            - -e
+            - |
+              pipy()
+              .listen(15003)
+              .serveHTTP(new Message('hi, it works as fgw2 inbound listener.\n'))

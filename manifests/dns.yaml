@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dns
+  labels:
+    app: dns
+    service: dns
+spec:
+  ports:
+  - name: dns
+    port: 1153
+    protocol: UDP
+    targetPort: 1153
+  selector:
+    app: dns
+    service: dns
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dns
+      service: dns
+  template:
+    metadata:
+      labels:
+        app: dns
+        service: dns
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - name: dns
+        image: cybwan/dns:0.1.1
+        imagePullPolicy: IfNotPresent
+        command:
+          - dns
+          - server
+          - --laddr=0.0.0.0:1153
+          - --trust-domain=cluster.local
+          - --wildcard-a-addr=1.1.1.1
+          - --wildcard-aaaa-addr=::1.1.1.1
+        ports:
+        - name: dns
+          containerPort: 1153
+          protocol: UDP

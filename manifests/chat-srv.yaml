@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-srv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-srv
+  template:
+    metadata:
+      labels:
+        app: chat-srv
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - name: udp
+        image: cybwan/chat:0.1.1
+        imagePullPolicy: IfNotPresent
+        command:
+          - /chat
+          - udp
+          - server
+          - --laddr=0.0.0.0:6666
+      - name: tcp
+        image: cybwan/chat:0.1.1
+        imagePullPolicy: IfNotPresent
+        command:
+          - /chat
+          - tcp
+          - server
+          - --laddr=0.0.0.0:6666
