@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: grpc-server
-          image: flomesh/grpc-server
+          image: cybwan/grpc-server
           imagePullPolicy: Always
           command: [ "java", "-jar", "grpc-server-1.0.0.jar" ]

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: grpc-client
-          image: flomesh/grpc-client
+          image: cybwan/grpc-client
           imagePullPolicy: Always
           command: [ "java", "-jar", "grpc-client-1.0.0.jar" ]
         - name: curl
