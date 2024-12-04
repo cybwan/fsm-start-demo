@@ -14,8 +14,8 @@ make zk-deploy
 make zk-port-forward
 
 kubectl create namespace demo
-kubectl apply -n demo -f manifests/grcp.server.yaml
-kubectl apply -n demo -f manifests/grcp.client.yaml
+kubectl apply -n demo -f manifests/zookeeper/nebula/grcp.server.yaml
+kubectl apply -n demo -f manifests/zookeeper/nebula/grcp.client.yaml
 ```
 
 ## 2 部署网格服务

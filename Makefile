@@ -67,6 +67,16 @@ nacos-auth-deploy:
 nacos-reboot:
 	kubectl rollout restart deployment -n default nacos
 
+.PHONY: zk-deploy
+zk-deploy:
+	kubectl apply -n default -f ./manifests/zookeeper.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n default -l app=zookeeper --timeout=180s
+
+.PHONY: zk-reboot
+zk-reboot:
+	kubectl rollout restart deployment -n default zookeeper
+
 .PHONY: consul-port-forward
 consul-port-forward:
 	export PORT_FORWARD=$(PORT_FORWARD);\
@@ -84,6 +94,15 @@ nacos-port-forward:
 	export PORT_FORWARD=$(PORT_FORWARD);\
 	export POD=$$(kubectl get pods --selector app=nacos -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n default "$$PORT_FORWARD" --address 0.0.0.0
+
+.PHONY: zk-port-forward
+zk-port-forward:
+	export PORT_FORWARD=$(PORT_FORWARD);\
+	export POD=$$(kubectl get pods --selector app=zookeeper -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n default "2181:2181" --address 0.0.0.0 &
+	export PORT_FORWARD=$(PORT_FORWARD);\
+	export POD=$$(kubectl get pods --selector app=zookeeper -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n default "8081:8081" --address 0.0.0.0 &
 
 .PHONY: deploy-native-bookwarehouse
 deploy-native-bookwarehouse: undeploy-native-bookwarehouse
