@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: grpc-server
+  name: ${cluster}-nebula-grpc-server
   labels:
-    app: grpc-server
+    app: nebula-grpc-server
 spec:
-  replicas: 2
+  replicas: ${replicas}
   selector:
     matchLabels:
-      app: grpc-server
+      app: nebula-grpc-server
   template:
     metadata:
       labels:
-        app: grpc-server
+        app: nebula-grpc-server
     spec:
       containers:
-        - name: grpc-server
+        - name: server
           image: cybwan/grpc-server
           imagePullPolicy: Always
           command: [ "java", "-jar", "grpc-server-1.0.0.jar" ]

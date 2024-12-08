@@ -287,6 +287,24 @@ deploy-nacos-curl:
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
+.PHONY: deploy-zookeeper-nebula-grcp-server
+deploy-zookeeper-nebula-grcp-server:
+	kubectl delete namespace server --ignore-not-found
+	kubectl create namespace server
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add server; fi
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/zookeeper/nebula/grcp.server.yaml | kubectl apply -n server -f -
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n server -l app=nebula-grpc-server --timeout=180s
+
+.PHONY: deploy-zookeeper-nebula-grcp-client
+deploy-zookeeper-nebula-grcp-client:
+	kubectl delete namespace client --ignore-not-found
+	kubectl create namespace client
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add client; fi
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/zookeeper/nebula/grcp.client.yaml | kubectl apply -n client -f -
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n client -l app=nebula-grpc-client --timeout=180s
+
 port-forward-fsm-repo:
 	export PORT_FORWARD=$(PORT_FORWARD);\
 	export POD=$$(kubectl get pods --selector app=fsm-controller -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
