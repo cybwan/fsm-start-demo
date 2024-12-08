@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${cluster}-nebula-grpc-client
+  labels:
+    app: nebula-grpc-client
+spec:
+  replicas: ${replicas}
+  selector:
+    matchLabels:
+      app: nebula-grpc-client
+  template:
+    metadata:
+      labels:
+        app: nebula-grpc-client
+    spec:
+      containers:
+        - name: client
+          image: cybwan/grpc-client
+          imagePullPolicy: Always
+          command: [ "java", "-jar", "grpc-client-1.0.0.jar" ]
+        - name: curl
+          image: cybwan/ubuntu:22.04
+          imagePullPolicy: IfNotPresent
+          command: [ "sleep", "365d" ]

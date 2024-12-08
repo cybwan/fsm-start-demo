@@ -14,7 +14,7 @@ fsm_mesh_name="${fsm_mesh_name:-fsm}"
 
 fsm_cluster_name="${fsm_cluster_name:-fsm}"
 
-clusters="${clusters:-c1}"
+sidecar="${sidecar:-NodeLevel}"
 
 dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].spec.clusterIP}')"
 clusters="${clusters:-c0}"
@@ -25,9 +25,13 @@ fsm install \
     --set=fsm.image.registry="$CTR_REGISTRY" \
     --set=fsm.image.tag="$CTR_TAG" \
     --set=fsm.image.pullPolicy="$IMAGE_PULL_POLICY" \
-    --set=fsm.trafficInterceptionMode=NodeLevel \
+    --set=fsm.trafficInterceptionMode="$sidecar" \
     --set=fsm.fsmXnetwork.xnet.image.registry="$CTR_REGISTRY" \
     --set=fsm.fsmXnetwork.xnet.image.tag="$CTR_XNET_TAG" \
+    --set=fsm.sidecar.sidecarLogLevel=warn \
+    --set=fsm.sidecar.compressConfig=false \
+    --set=fsm.sidecar.image.registry="$CTR_REGISTRY" \
+    --set=fsm.repoServer.image.registry="$CTR_REGISTRY" \
     --set=fsm.controllerLogLevel=warn \
     --set=clusterSet.region=LN \
     --set=clusterSet.zone=DL \
@@ -45,4 +49,5 @@ fsm install \
     --set fsm.featureFlags.enableValidateGRPCRouteHostnames=false \
     --set fsm.featureFlags.enableValidateTLSRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGatewayListenerHostname=false \
+    --set=fsm.featureFlags.enableSidecarPrettyConfig=true \
     --timeout=900s

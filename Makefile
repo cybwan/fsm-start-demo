@@ -8,6 +8,7 @@ COUNT ?= 1000
 K3D_HOST_IP ?= 192.168.127.91
 
 fsm_cluster_name ?= fsm
+sidecar ?= NodeLevel
 replicas ?= 1
 
 CONSUL_VERSION ?= 1.15.4
@@ -28,7 +29,7 @@ k3d-reset:
 
 .PHONY: deploy-fsm
 deploy-fsm:
-	$fsm_cluster_name=$(fsm_cluster_name) scripts/deploy-fsm.sh
+	fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) scripts/deploy-fsm.sh
 
 .PHONY: mount-debugfs
 mount-debugfs:
@@ -115,6 +116,16 @@ nacos-auth-deploy:
 nacos-reboot:
 	kubectl rollout restart deployment -n default nacos
 
+.PHONY: zk-deploy
+zk-deploy:
+	kubectl apply -n default -f ./manifests/zookeeper.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n default -l app=zookeeper --timeout=180s
+
+.PHONY: zk-reboot
+zk-reboot:
+	kubectl rollout restart deployment -n default zookeeper
+
 .PHONY: consul-port-forward
 consul-port-forward:
 	export PORT_FORWARD=$(PORT_FORWARD);\
@@ -132,6 +143,15 @@ nacos-port-forward:
 	export PORT_FORWARD=$(PORT_FORWARD);\
 	export POD=$$(kubectl get pods --selector app=nacos -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n default "$$PORT_FORWARD" --address 0.0.0.0
+
+.PHONY: zk-port-forward
+zk-port-forward:
+	export PORT_FORWARD=$(PORT_FORWARD);\
+	export POD=$$(kubectl get pods --selector app=zookeeper -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n default "2181:2181" --address 0.0.0.0 &
+	export PORT_FORWARD=$(PORT_FORWARD);\
+	export POD=$$(kubectl get pods --selector app=zookeeper -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n default "8081:8081" --address 0.0.0.0 &
 
 .PHONY: deploy-native-bookwarehouse
 deploy-native-bookwarehouse: undeploy-native-bookwarehouse
@@ -315,6 +335,24 @@ deploy-nacos-curl:
 	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/nacos/curl.yaml | kubectl apply -n curl -f -
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
+
+.PHONY: deploy-zookeeper-nebula-grcp-server
+deploy-zookeeper-nebula-grcp-server:
+	kubectl delete namespace server --ignore-not-found
+	kubectl create namespace server
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add server; fi
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/zookeeper/nebula/grcp.server.yaml | kubectl apply -n server -f -
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n server -l app=nebula-grpc-server --timeout=180s
+
+.PHONY: deploy-zookeeper-nebula-grcp-client
+deploy-zookeeper-nebula-grcp-client:
+	kubectl delete namespace client --ignore-not-found
+	kubectl create namespace client
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add client; fi
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/zookeeper/nebula/grcp.client.yaml | kubectl apply -n client -f -
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n client -l app=nebula-grpc-client --timeout=180s
 
 port-forward-fsm-repo:
 	export PORT_FORWARD=$(PORT_FORWARD);\
