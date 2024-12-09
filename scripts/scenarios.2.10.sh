@@ -2,7 +2,7 @@
 
 # 场景 Nebula-GRPC 单集群微服务融合测试
 
-## 1 部署 k3d 集群
+## 1 部署 K8S 集群
 
 ###bash
 clusters="C1" make k3d-up
@@ -20,7 +20,7 @@ kubecm switch k3d-C1
 fsm_cluster_name=C1 sidecar=PodLevel make deploy-fsm
 ###
 
-### 2.2 部署 Zookeeper 服务
+### 2.2 部署 zookeeper 服务
 
 ###bash
 make zk-deploy
@@ -82,7 +82,7 @@ spec:
 EOF
 ###
 
-### 2.7 部署 Zookeeper 微服务
+### 2.7 部署 zookeeper 微服务
 
 ###bash
 WITH_MESH=true fsm_cluster_name=c1 make deploy-zookeeper-nebula-grcp-server
