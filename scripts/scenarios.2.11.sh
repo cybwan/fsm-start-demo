@@ -35,12 +35,24 @@ spec:
   listeners:
     - protocol: HTTP
       port: 10080
-      name: igrs-grpc
+      name: igrs-http
       allowedRoutes:
         namespaces:
           from: All
     - protocol: HTTP
       port: 10090
+      name: egrs-http
+      allowedRoutes:
+        namespaces:
+          from: All
+    - protocol: HTTP
+      port: 10081
+      name: igrs-grpc
+      allowedRoutes:
+        namespaces:
+          from: All
+    - protocol: HTTP
+      port: 10091
       name: egrs-grpc
       allowedRoutes:
         namespaces:
@@ -63,7 +75,7 @@ export c1_fgw_pod_ip="$(kubectl get pod -n fsm-system --selector app=fsm-gateway
 echo c1_fgw_pod_ip $c1_fgw_pod_ip
 ###
 
-#### 2.1.3 部署 Zookeeper 服务
+#### 2.1.3 部署 zookeeper 服务
 
 ###bash
 make zk-deploy
@@ -78,7 +90,7 @@ export c1_zookeeper_pod_ip="$(kubectl get pod -n default --selector app=zookeepe
 echo c1_zookeeper_pod_ip $c1_zookeeper_pod_ip
 ###
 
-#### 2.1.4 部署 Zookeeper 服务访问控制策略
+#### 2.1.4 部署 zookeeper 服务访问控制策略
 
 ###bash
 kubectl create namespace fsm-policy
@@ -106,14 +118,14 @@ fsm namespace add derive-local
 kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"zookeeper"}}}'  --type=merge
 ###
 
-#### 2.1.6 部署 zookeeper connector(c1-zookeeper-to-c1-derive-local)
+#### 2.1.6 部署 zookeeper connector(c1-zk-to-c1-derive-local)
 
 ###
 kubectl apply  -f - <<EOF
 kind: ZookeeperConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c1-zookeeper-to-c1-derive-local
+  name: c1-zk-to-c1-derive-local
 spec:
   httpAddr: $c1_zookeeper_cluster_ip:2181
   deriveNamespace: derive-local
@@ -123,12 +135,39 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    withGateway:
+      enable: true
   syncFromK8S:
     enable: false
 EOF
 ###
 
-#### 2.1.7 部署 Zookeeper 微服务
+#### 2.1.7 部署 fgw connector
+
+###bash
+kubectl apply  -f - <<EOF
+kind: GatewayConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c1-fgw
+spec:
+  gatewayName: k8s-c1-fgw
+  ingress:
+    ipSelector: ExternalIP
+    httpPort: 10080
+    grpcPort: 10081
+  egress:
+    ipSelector: ClusterIP
+    httpPort: 10090
+    grpcPort: 10091
+  syncToFgw:
+    enable: true
+    allowK8sNamespaces:
+      - derive-local
+EOF
+###
+
+#### 2.1.8 部署 zookeeper 微服务
 
 ###bash
 WITH_MESH=true fsm_cluster_name=c1 make deploy-zookeeper-nebula-grcp-server
@@ -159,12 +198,24 @@ spec:
   listeners:
     - protocol: HTTP
       port: 10080
-      name: igrs-grpc
+      name: igrs-http
       allowedRoutes:
         namespaces:
           from: All
     - protocol: HTTP
       port: 10090
+      name: egrs-http
+      allowedRoutes:
+        namespaces:
+          from: All
+    - protocol: HTTP
+      port: 10081
+      name: igrs-grpc
+      allowedRoutes:
+        namespaces:
+          from: All
+    - protocol: HTTP
+      port: 10091
       name: egrs-grpc
       allowedRoutes:
         namespaces:
@@ -187,7 +238,7 @@ export c2_fgw_pod_ip="$(kubectl get pod -n fsm-system --selector app=fsm-gateway
 echo c2_fgw_pod_ip $c2_fgw_pod_ip
 ###
 
-#### 2.2.3 部署 Zookeeper 服务
+#### 2.2.3 部署 zookeeper 服务
 
 ###bash
 make zk-deploy
@@ -202,7 +253,7 @@ export c2_zookeeper_pod_ip="$(kubectl get pod -n default --selector app=zookeepe
 echo c2_zookeeper_pod_ip $c2_zookeeper_pod_ip
 ###
 
-#### 2.2.4 部署 Zookeeper 服务访问控制策略
+#### 2.2.4 部署 zookeeper 服务访问控制策略
 
 ###bash
 kubectl create namespace fsm-policy
@@ -230,14 +281,14 @@ fsm namespace add derive-local
 kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"zookeeper"}}}'  --type=merge
 ###
 
-#### 2.2.6 部署 zookeeper connector(c2-zookeeper-to-c2-derive-local)
+#### 2.2.6 部署 zookeeper connector(c2-zk-to-c2-derive-local)
 
 ###
 kubectl apply  -f - <<EOF
 kind: ZookeeperConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c2-zookeeper-to-c2-derive-local
+  name: c2-zk-to-c2-derive-local
 spec:
   httpAddr: $c2_zookeeper_cluster_ip:2181
   deriveNamespace: derive-local
@@ -247,12 +298,39 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    withGateway:
+      enable: true
   syncFromK8S:
     enable: false
 EOF
 ###
 
-#### 2.2.7 部署 Zookeeper 微服务
+#### 2.2.7 部署 fgw connector
+
+###bash
+kubectl apply  -f - <<EOF
+kind: GatewayConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c2-fgw
+spec:
+  gatewayName: k8s-c1-fgw
+  ingress:
+    ipSelector: ExternalIP
+    httpPort: 10080
+    grpcPort: 10081
+  egress:
+    ipSelector: ClusterIP
+    httpPort: 10090
+    grpcPort: 10091
+  syncToFgw:
+    enable: true
+    allowK8sNamespaces:
+      - derive-local
+EOF
+###
+
+#### 2.2.8 部署 zookeeper 微服务
 
 ###bash
 WITH_MESH=true fsm_cluster_name=c2 make deploy-zookeeper-nebula-grcp-server
@@ -283,12 +361,24 @@ spec:
   listeners:
     - protocol: HTTP
       port: 10080
-      name: igrs-grpc
+      name: igrs-http
       allowedRoutes:
         namespaces:
           from: All
     - protocol: HTTP
       port: 10090
+      name: egrs-http
+      allowedRoutes:
+        namespaces:
+          from: All
+    - protocol: HTTP
+      port: 10081
+      name: igrs-grpc
+      allowedRoutes:
+        namespaces:
+          from: All
+    - protocol: HTTP
+      port: 10091
       name: egrs-grpc
       allowedRoutes:
         namespaces:
@@ -311,7 +401,7 @@ export c3_fgw_pod_ip="$(kubectl get pod -n fsm-system --selector app=fsm-gateway
 echo c3_fgw_pod_ip $c3_fgw_pod_ip
 ###
 
-#### 2.3.3 部署 Zookeeper 服务
+#### 2.3.3 部署 zookeeper 服务
 
 ###bash
 make zk-deploy
@@ -326,7 +416,7 @@ export c3_zookeeper_pod_ip="$(kubectl get pod -n default --selector app=zookeepe
 echo c3_zookeeper_pod_ip $c3_zookeeper_pod_ip
 ###
 
-#### 2.3.4 部署 Zookeeper 服务访问控制策略
+#### 2.3.4 部署 zookeeper 服务访问控制策略
 
 ###bash
 kubectl create namespace fsm-policy
@@ -354,14 +444,14 @@ fsm namespace add derive-local
 kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"zookeeper"}}}'  --type=merge
 ###
 
-#### 2.3.6 部署 zookeeper connector(c3-zookeeper-to-c3-derive-local)
+#### 2.3.6 部署 zookeeper connector(c3-zk-to-c3-derive-local)
 
 ###
 kubectl apply  -f - <<EOF
 kind: ZookeeperConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c3-zookeeper-to-c3-derive-local
+  name: c3-zk-to-c3-derive-local
 spec:
   httpAddr: $c3_zookeeper_cluster_ip:2181
   deriveNamespace: derive-local
@@ -371,14 +461,156 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    withGateway:
+      enable: true
+    filterIpRanges:
+      - 10.103.1.0/24
   syncFromK8S:
     enable: false
 EOF
 ###
 
-#### 2.3.7 部署 Zookeeper 微服务
+#### 2.3.7 部署 fgw connector
+
+###bash
+kubectl apply  -f - <<EOF
+kind: GatewayConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c3-fgw
+spec:
+  gatewayName: k8s-c3-fgw
+  ingress:
+    ipSelector: ExternalIP
+    httpPort: 10080
+    grpcPort: 10081
+  egress:
+    ipSelector: ClusterIP
+    httpPort: 10090
+    grpcPort: 10091
+  syncToFgw:
+    enable: true
+    allowK8sNamespaces:
+      - derive-local
+      - derive-other
+EOF
+###
+
+#### 2.3.8 部署 zookeeper 微服务
 
 ###bash
 WITH_MESH=true fsm_cluster_name=c3 make deploy-zookeeper-nebula-grcp-server
 WITH_MESH=true fsm_cluster_name=c1 make deploy-zookeeper-nebula-grcp-client
+###
+
+## 3 微服务融合
+
+### 3.1 C1 集群
+
+###bash
+kubecm switch k3d-C1
+###
+
+#### 3.1.1 部署 zookeeper connector(c1-k8s-to-c3-zookeeper)
+
+##c1 k8s微服务同步到c3 zookeeper##
+
+###
+kubectl apply  -f - <<EOF
+kind: ZookeeperConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c1-k8s-to-c3-zookeeper
+spec:
+  httpAddr: $c3_zookeeper_external_ip:2181
+  deriveNamespace: none
+  basePath: /Application/grpc
+  category: providers
+  adaptor: nebula
+  syncToK8S:
+    enable: false
+  syncFromK8S:
+    enable: true
+    withGateway:
+      enable: true
+    allowK8sNamespaces:
+      - derive-local
+EOF
+###
+
+### 3.2 C2 集群
+
+###bash
+kubecm switch k3d-C2
+###
+
+#### 3.2.1 部署 zookeeper connector(c2-k8s-to-c3-zookeeper)
+
+##c2 k8s微服务同步到c3 zookeeper##
+
+###
+kubectl apply  -f - <<EOF
+kind: ZookeeperConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c2-k8s-to-c3-zookeeper
+spec:
+  httpAddr: $c3_zookeeper_external_ip:2181
+  deriveNamespace: none
+  basePath: /Application/grpc
+  category: providers
+  adaptor: nebula
+  syncToK8S:
+    enable: false
+  syncFromK8S:
+    enable: true
+    withGateway:
+      enable: true
+    allowK8sNamespaces:
+      - derive-local
+EOF
+###
+
+### 3.3 C3 集群
+
+###bash
+kubecm switch k3d-C3
+###
+
+#### 3.3.3 导入其他集群 zookeeper 微服务
+
+##### 3.3.3.1 创建 derive-other namespace
+
+###bash
+kubectl create namespace derive-other
+fsm namespace add derive-other
+kubectl patch namespace derive-other -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"zookeeper"}}}'  --type=merge
+
+kubectl patch namespace derive-other -p '{"metadata":{"annotations":{"flomesh.io/cloud-service-attached-to":"derive-local"}}}'  --type=merge
+###
+
+##### 3.3.3.2 部署 zookeeper connector(c3-zookeeper-to-c3-derive-other)
+
+###
+kubectl apply  -f - <<EOF
+kind: ZookeeperConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c3-zookeeper-to-c3-derive-other
+spec:
+  httpAddr: $c3_zookeeper_cluster_ip:8500
+  deriveNamespace: derive-other
+  asInternalServices: false
+  basePath: /Application/grpc
+  category: providers
+  adaptor: nebula
+  syncToK8S:
+    enable: true
+    excludeIpRanges:
+      - 10.103.1.0/24
+    withGateway:
+      enable: true
+  syncFromK8S:
+    enable: false
+EOF
 ###

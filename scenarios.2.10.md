@@ -18,7 +18,7 @@ kubecm switch k3d-C1
 fsm_cluster_name=C1 sidecar=PodLevel make deploy-fsm
 ```
 
-### 2.2 部署 Zookeeper 服务
+### 2.2 部署 zookeeper 服务
 
 ```bash
 make zk-deploy
@@ -80,7 +80,7 @@ spec:
 EOF
 ```
 
-### 2.7 部署 Zookeeper 微服务
+### 2.7 部署 zookeeper 微服务
 
 ```bash
 WITH_MESH=true fsm_cluster_name=c1 make deploy-zookeeper-nebula-grcp-server
