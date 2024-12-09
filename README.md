@@ -67,3 +67,5 @@ cd fsm-start-demo
 ### 2.9   场景 [Consul 多集群微服务高可用测试](scenarios.2.9.md) 待实现
 
 ### 2.10 场景 [Nebula-GRPC 单集群微服务融合测试](scenarios.2.10.md)
+
+### 2.11 场景 [Nebula-GRPC 多集群微服务融合测试](scenarios.2.11.md) 实现中

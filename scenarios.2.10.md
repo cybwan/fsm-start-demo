@@ -1,6 +1,6 @@
 # 场景 Nebula-GRPC 单集群微服务融合测试
 
-## 1 部署 k3d 集群
+## 1 部署 K8S 集群
 
 ```bash
 clusters="C1" make k3d-up
@@ -50,25 +50,25 @@ spec:
 EOF
 ```
 
-### 2.3 创建 derive-zookeeper namespace
+### 2.3 创建 derive-local namespace
 
 ```bash
-kubectl create namespace derive-zookeeper
-fsm namespace add derive-zookeeper
-kubectl patch namespace derive-zookeeper -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"zookeeper"}}}'  --type=merge
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"zookeeper"}}}'  --type=merge
 ```
 
-### 2.4 部署 zookeeper connector(c1-zookeeper-to-c1-derive-zookeeper)
+### 2.4 部署 zookeeper connector(c1-zk-to-c1-derive-local)
 
 ```
 kubectl apply  -f - <<EOF
 kind: ZookeeperConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c1-zookeeper-to-c1-derive-zookeeper
+  name: c1-zk-to-c1-derive-local
 spec:
   httpAddr: $c1_zookeeper_cluster_ip:2181
-  deriveNamespace: derive-zookeeper
+  deriveNamespace: derive-local
   basePath: /Application/grpc
   category: providers
   adaptor: nebula
@@ -108,7 +108,7 @@ salary: 7200.0
 total: 1733633489387
 ```
 
-## 4 卸载 k3d 集群
+## 4 卸载 K8S 集群
 
 ```bash
 clusters="C1" make k3d-reset

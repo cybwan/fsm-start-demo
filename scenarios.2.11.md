@@ -1,23 +1,9 @@
-# 场景 Consul 多集群微服务高可用测试
-
-## 测试目的
-
-- [ ] **跨集群云上服务的 HA**
-  - **derive local 空间下无云上服务实例对 FailOver的影响**
-  - **无原生服务实例对 FailOver的影响**
-
-- [ ] **原生应用同云上服务HA**
-  - **derive local 空间下无云上服务实例对 FailOver的影响**
-  - **无原生服务实例对 FailOver的影响**
-
-- [ ] **固定服务端口**
-  - **需要进一步探讨对云上服务实例被网格纳管的情形**
+# 场景 Nebula-GRPC 多集群微服务融合测试
 
 ## 1 部署 K8S 三个集群
 
 ```bash
-export clusters="C1 C2 C3"
-make k3d-up
+clusters="C1 C2 C3" make k3d-up
 ```
 
 ## 2 部署服务
@@ -31,7 +17,7 @@ kubecm switch k3d-C1
 #### 2.1.1 部署网格服务
 
 ```bash
-fsm_cluster_name=C1 make deploy-fsm
+fsm_cluster_name=C1 sidecar=PodLevel make deploy-fsm
 ```
 
 #### 2.1.2 部署 fgw
@@ -41,19 +27,19 @@ kubectl apply -n fsm-system -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: node-sidecar
+  name: k8s-c1-fgw
 spec:
   gatewayClassName: fsm
   listeners:
     - protocol: HTTP
       port: 10080
-      name: igrs-http
+      name: igrs-grpc
       allowedRoutes:
         namespaces:
           from: All
     - protocol: HTTP
-      port: 15001
-      name: mesh-http
+      port: 10090
+      name: egrs-grpc
       allowedRoutes:
         namespaces:
           from: All
@@ -63,36 +49,34 @@ sleep 3
 
 kubectl wait --all --for=condition=ready pod -n fsm-system -l app=fsm-gateway --timeout=180s
 
-until kubectl get service/fsm-gateway-fsm-system-node-sidecar-tcp -n fsm-system --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+until kubectl get service/fsm-gateway-fsm-system-k8s-c1-fgw-tcp -n fsm-system --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
-export c1_fgw_cluster_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-node-sidecar-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
+export c1_fgw_cluster_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-k8s-c1-fgw-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c1_fgw_cluster_ip $c1_fgw_cluster_ip
 
-export c1_fgw_external_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-node-sidecar-tcp -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+export c1_fgw_external_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-k8s-c1-fgw-tcp -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
 echo c1_fgw_external_ip $c1_fgw_external_ip
 
 export c1_fgw_pod_ip="$(kubectl get pod -n fsm-system --selector app=fsm-gateway -o jsonpath='{.items[0].status.podIP}')"
 echo c1_fgw_pod_ip $c1_fgw_pod_ip
 ```
 
-#### 2.1.3 部署 Consul 服务
+#### 2.1.3 部署 Zookeeper 服务
 
 ```bash
-make consul-deploy
+make zk-deploy
 
-#PORT_FORWARD="8501:8500" make consul-port-forward &
+export c1_zookeeper_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=zookeeper -o jsonpath='{.items[0].spec.clusterIP}')"
+echo c1_zookeeper_cluster_ip $c1_zookeeper_cluster_ip
 
-export c1_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
-echo c1_consul_cluster_ip $c1_consul_cluster_ip
+export c1_zookeeper_external_ip="$(kubectl get svc -n default --field-selector metadata.name=zookeeper -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+echo c1_zookeeper_external_ip $c1_zookeeper_external_ip
 
-export c1_consul_external_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
-echo c1_consul_external_ip $c1_consul_external_ip
-
-export c1_consul_pod_ip="$(kubectl get pod -n default --selector app=consul -o jsonpath='{.items[0].status.podIP}')"
-echo c1_consul_pod_ip $c1_consul_pod_ip
+export c1_zookeeper_pod_ip="$(kubectl get pod -n default --selector app=zookeeper -o jsonpath='{.items[0].status.podIP}')"
+echo c1_zookeeper_pod_ip $c1_zookeeper_pod_ip
 ```
 
-#### 2.1.4 配置 Consul 服务访问控制策略
+#### 2.1.4 部署 Zookeeper 服务访问控制策略
 
 ```bash
 kubectl create namespace fsm-policy
@@ -100,22 +84,52 @@ fsm namespace add fsm-policy
 
 kubectl apply -f - <<EOF
 kind: AccessControl
-apiVersion: xnetwork.flomesh.io/v1alpha1
+apiVersion: policy.flomesh.io/v1alpha1
 metadata:
   name: global
   namespace: fsm-policy
 spec:
-  services:
-  - namespace: default
-    name: consul
-    withEndpointIPs: true
+  sources:
+  - kind: Service
+    namespace: default
+    name: zookeeper
 EOF
 ```
 
-#### 2.1.5 部署 Consul 微服务
+#### 2.1.5 创建 derive-local namespace
 
 ```bash
-WITH_MESH=true fsm_cluster_name=c1 replicas=1 make deploy-consul-httpbin
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"zookeeper"}}}'  --type=merge
+```
+
+#### 2.1.6 部署 zookeeper connector(c1-zk-to-c1-derive-local)
+
+```
+kubectl apply  -f - <<EOF
+kind: ZookeeperConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c1-zk-to-c1-derive-local
+spec:
+  httpAddr: $c1_zookeeper_cluster_ip:2181
+  deriveNamespace: derive-local
+  basePath: /Application/grpc
+  category: providers
+  adaptor: nebula
+  asInternalServices: true
+  syncToK8S:
+    enable: true
+  syncFromK8S:
+    enable: false
+EOF
+```
+
+#### 2.1.7 部署 Zookeeper 微服务
+
+```bash
+WITH_MESH=true fsm_cluster_name=c1 make deploy-zookeeper-nebula-grcp-server
 ```
 
 ### 2.2 C2集群
@@ -127,7 +141,7 @@ kubecm switch k3d-C2
 #### 2.2.1 部署网格服务
 
 ```bash
-fsm_cluster_name=C2 make deploy-fsm
+fsm_cluster_name=C2 sidecar=PodLevel make deploy-fsm
 ```
 
 #### 2.2.2 部署 fgw
@@ -137,19 +151,19 @@ kubectl apply -n fsm-system -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: node-sidecar
+  name: k8s-c2-fgw
 spec:
   gatewayClassName: fsm
   listeners:
     - protocol: HTTP
       port: 10080
-      name: igrs-http
+      name: igrs-grpc
       allowedRoutes:
         namespaces:
           from: All
     - protocol: HTTP
-      port: 15001
-      name: mesh-http
+      port: 10090
+      name: egrs-grpc
       allowedRoutes:
         namespaces:
           from: All
@@ -159,36 +173,34 @@ sleep 3
 
 kubectl wait --all --for=condition=ready pod -n fsm-system -l app=fsm-gateway --timeout=180s
 
-until kubectl get service/fsm-gateway-fsm-system-node-sidecar-tcp -n fsm-system --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+until kubectl get service/fsm-gateway-fsm-system-k8s-c2-fgw-tcp -n fsm-system --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
-export c2_fgw_cluster_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-node-sidecar-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
+export c2_fgw_cluster_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-k8s-c2-fgw-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c2_fgw_cluster_ip $c2_fgw_cluster_ip
 
-export c2_fgw_external_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-node-sidecar-tcp -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+export c2_fgw_external_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-k8s-c2-fgw-tcp -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
 echo c2_fgw_external_ip $c2_fgw_external_ip
 
 export c2_fgw_pod_ip="$(kubectl get pod -n fsm-system --selector app=fsm-gateway -o jsonpath='{.items[0].status.podIP}')"
 echo c2_fgw_pod_ip $c2_fgw_pod_ip
 ```
 
-#### 2.2.3 部署 Consul 服务
+#### 2.2.3 部署 Zookeeper 服务
 
 ```bash
-make consul-deploy
+make zk-deploy
 
-#PORT_FORWARD="8502:8500" make consul-port-forward &
+export c2_zookeeper_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=zookeeper -o jsonpath='{.items[0].spec.clusterIP}')"
+echo c2_zookeeper_cluster_ip $c2_zookeeper_cluster_ip
 
-export c2_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
-echo c2_consul_cluster_ip $c2_consul_cluster_ip
+export c2_zookeeper_external_ip="$(kubectl get svc -n default --field-selector metadata.name=zookeeper -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+echo c2_zookeeper_external_ip $c2_zookeeper_external_ip
 
-export c2_consul_external_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
-echo c2_consul_external_ip $c2_consul_external_ip
-
-export c2_consul_pod_ip="$(kubectl get pod -n default --selector app=consul -o jsonpath='{.items[0].status.podIP}')"
-echo c2_consul_pod_ip $c2_consul_pod_ip
+export c2_zookeeper_pod_ip="$(kubectl get pod -n default --selector app=zookeeper -o jsonpath='{.items[0].status.podIP}')"
+echo c2_zookeeper_pod_ip $c2_zookeeper_pod_ip
 ```
 
-#### 2.2.4 配置 Consul 服务访问控制策略
+#### 2.2.4 部署 Zookeeper 服务访问控制策略
 
 ```bash
 kubectl create namespace fsm-policy
@@ -196,22 +208,52 @@ fsm namespace add fsm-policy
 
 kubectl apply -f - <<EOF
 kind: AccessControl
-apiVersion: xnetwork.flomesh.io/v1alpha1
+apiVersion: policy.flomesh.io/v1alpha1
 metadata:
   name: global
   namespace: fsm-policy
 spec:
-  services:
-  - namespace: default
-    name: consul
-    withEndpointIPs: true
+  sources:
+  - kind: Service
+    namespace: default
+    name: zookeeper
 EOF
 ```
 
-#### 2.2.5 部署 Consul 微服务
+#### 2.2.5 创建 derive-local namespace
 
 ```bash
-WITH_MESH=true fsm_cluster_name=c2 replicas=1 make deploy-consul-httpbin
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"zookeeper"}}}'  --type=merge
+```
+
+#### 2.2.6 部署 zookeeper connector(c2-zk-to-c2-derive-local)
+
+```
+kubectl apply  -f - <<EOF
+kind: ZookeeperConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c2-zk-to-c2-derive-local
+spec:
+  httpAddr: $c2_zookeeper_cluster_ip:2181
+  deriveNamespace: derive-local
+  basePath: /Application/grpc
+  category: providers
+  adaptor: nebula
+  asInternalServices: true
+  syncToK8S:
+    enable: true
+  syncFromK8S:
+    enable: false
+EOF
+```
+
+#### 2.2.7 部署 Zookeeper 微服务
+
+```bash
+WITH_MESH=true fsm_cluster_name=c2 make deploy-zookeeper-nebula-grcp-server
 ```
 
 ### 2.3 C3集群
@@ -223,7 +265,7 @@ kubecm switch k3d-C3
 #### 2.3.1 部署网格服务
 
 ```bash
-fsm_cluster_name=C3 make deploy-fsm
+fsm_cluster_name=C3 sidecar=PodLevel make deploy-fsm
 ```
 
 #### 2.3.2 部署 fgw
@@ -233,19 +275,19 @@ kubectl apply -n fsm-system -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: node-sidecar
+  name: k8s-c3-fgw
 spec:
   gatewayClassName: fsm
   listeners:
     - protocol: HTTP
       port: 10080
-      name: igrs-http
+      name: igrs-grpc
       allowedRoutes:
         namespaces:
           from: All
     - protocol: HTTP
-      port: 15001
-      name: mesh-http
+      port: 10090
+      name: egrs-grpc
       allowedRoutes:
         namespaces:
           from: All
@@ -255,36 +297,34 @@ sleep 3
 
 kubectl wait --all --for=condition=ready pod -n fsm-system -l app=fsm-gateway --timeout=180s
 
-until kubectl get service/fsm-gateway-fsm-system-node-sidecar-tcp -n fsm-system --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+until kubectl get service/fsm-gateway-fsm-system-k8s-c3-fgw-tcp -n fsm-system --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
-export c3_fgw_cluster_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-node-sidecar-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
+export c3_fgw_cluster_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-k8s-c3-fgw-tcp -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c3_fgw_cluster_ip $c3_fgw_cluster_ip
 
-export c3_fgw_external_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-node-sidecar-tcp -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+export c3_fgw_external_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-k8s-c3-fgw-tcp -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
 echo c3_fgw_external_ip $c3_fgw_external_ip
 
 export c3_fgw_pod_ip="$(kubectl get pod -n fsm-system --selector app=fsm-gateway -o jsonpath='{.items[0].status.podIP}')"
 echo c3_fgw_pod_ip $c3_fgw_pod_ip
 ```
 
-#### 2.3.3 部署 Consul 服务
+#### 2.3.3 部署 Zookeeper 服务
 
 ```bash
-make consul-deploy
+make zk-deploy
 
-#PORT_FORWARD="8503:8500" make consul-port-forward &
+export c3_zookeeper_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=zookeeper -o jsonpath='{.items[0].spec.clusterIP}')"
+echo c3_zookeeper_cluster_ip $c3_zookeeper_cluster_ip
 
-export c3_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
-echo c3_consul_cluster_ip $c3_consul_cluster_ip
+export c3_zookeeper_external_ip="$(kubectl get svc -n default --field-selector metadata.name=zookeeper -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+echo c3_zookeeper_external_ip $c3_zookeeper_external_ip
 
-export c3_consul_external_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
-echo c3_consul_external_ip $c3_consul_external_ip
-
-export c3_consul_pod_ip="$(kubectl get pod -n default --selector app=consul -o jsonpath='{.items[0].status.podIP}')"
-echo c3_consul_pod_ip $c3_consul_pod_ip
+export c3_zookeeper_pod_ip="$(kubectl get pod -n default --selector app=zookeeper -o jsonpath='{.items[0].status.podIP}')"
+echo c3_zookeeper_pod_ip $c3_zookeeper_pod_ip
 ```
 
-#### 2.3.4 配置 Consul 服务访问控制策略
+#### 2.3.4 部署 Zookeeper 服务访问控制策略
 
 ```bash
 kubectl create namespace fsm-policy
@@ -292,23 +332,53 @@ fsm namespace add fsm-policy
 
 kubectl apply -f - <<EOF
 kind: AccessControl
-apiVersion: xnetwork.flomesh.io/v1alpha1
+apiVersion: policy.flomesh.io/v1alpha1
 metadata:
   name: global
   namespace: fsm-policy
 spec:
-  services:
-  - namespace: default
-    name: consul
-    withEndpointIPs: true
+  sources:
+  - kind: Service
+    namespace: default
+    name: zookeeper
 EOF
 ```
 
-#### 2.3.5 部署 Consul 微服务
+#### 2.3.5 创建 derive-local namespace
 
 ```bash
-WITH_MESH=false fsm_cluster_name=c3 replicas=0 make deploy-consul-httpbin
-WITH_MESH=true fsm_cluster_name=c3 replicas=1 make deploy-native-httpbin
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"zookeeper"}}}'  --type=merge
+```
+
+#### 2.3.6 部署 zookeeper connector(c3-zk-to-c3-derive-local)
+
+```
+kubectl apply  -f - <<EOF
+kind: ZookeeperConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: c3-zk-to-c3-derive-local
+spec:
+  httpAddr: $c3_zookeeper_cluster_ip:2181
+  deriveNamespace: derive-local
+  basePath: /Application/grpc
+  category: providers
+  adaptor: nebula
+  asInternalServices: true
+  syncToK8S:
+    enable: true
+  syncFromK8S:
+    enable: false
+EOF
+```
+
+#### 2.3.7 部署 Zookeeper 微服务
+
+```bash
+WITH_MESH=true fsm_cluster_name=c3 make deploy-zookeeper-nebula-grcp-server
+WITH_MESH=true fsm_cluster_name=c1 make deploy-zookeeper-nebula-grcp-client
 ```
 
 ## 3 微服务融合
@@ -718,75 +788,31 @@ spec:
 EOF
 ```
 
-## 4 集群调度策略
+## 4 确认服务调用效果
 
-### 4.1 切换集群
+测试指令:
 
 ```bash
-kubecm switch k3d-C3
-export c3_curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
-echo c3_curl_pod_name $c3_curl_pod_name
+export c3_client_pod_name="$(kubectl get pod -n client --selector app=nebula-grpc-client -o jsonpath='{.items[0].metadata.name}')"
+echo c3_client_pod_name $c3_client_pod_name
+
+kubectl logs -n client $c3_client_pod_name -c client -f
+
+make zk-port-forward
 ```
 
-### 4.2 查看集群调度策略
+确认运行效果,返回:
 
 ```bash
-kubectl get meshconfigs -n fsm-system fsm-mesh-config -o jsonpath='{.spec.connector.lb.type}'
-```
-
-### 4.3 FailOver
-
-#### 4.3.1 设置集群调度策略
-
-```bash
-export fsm_namespace=fsm-system
-kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"connector":{"lb":{"type":"FailOver","masterNamespace":"derive-local","slaveNamespaces":["derive-other"]}}}}' --type=merge
-```
-
-#### 4.3.2 确认服务调用效果
-
-**多次执行:**
-
-```bash
-kubectl exec -n curl $c3_curl_pod_name -c curl -- curl -s 127.0.0.1:14001
-```
-
-**正确返回结果类似于:**
-
-```bash
-c3-httpbin-5dd47d8645-ddhj5
-c3-httpbin-5dd47d8645-ddhj5
-c3-httpbin-5dd47d8645-ddhj5
-```
-
-### 4.4 ActiveActive
-
-#### 4.4.1 设置集群调度策略
-
-```bash
-export fsm_namespace=fsm-system
-kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"connector":{"lb":{"type":"ActiveActive"}}}}' --type=merge
-```
-
-#### 4.4.2 确认服务调用效果
-
-**多次执行:**
-
-```bash
-kubectl exec -n curl $c3_curl_pod_name -c curl -- curl -s 127.0.0.1:14001
-```
-
-**正确返回结果类似于:**
-
-```bash
-c3-httpbin-5dd47d8645-ddhj5
-c1-httpbin-5dd47d8645-mm2bg
-c2-httpbin-5dd47d8645-lsdh8
+success: true
+message: "Miss Alice, well done.(\346\210\221\347\210\261\345\244\217\345\244\251)"
+no: 200
+salary: 7200.0
+total: 1733633489387
 ```
 
 ## 5 卸载 K8S 三个集群
 
 ```bash
-export clusters="C1 C2 C3"
-make k3d-reset
+clusters="C1 C2 C3" make k3d-reset
 ```
