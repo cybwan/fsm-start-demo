@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 CTR_REGISTRY="${CTR_REGISTRY:-cybwan}"
-CTR_TAG="${CTR_TAG:-1.5.0-alpha.3}"
+CTR_TAG="${CTR_TAG:-1.5.0-alpha.4}"
 CTR_XNET_TAG="${CTR_XNET_TAG:-latest}"
 IMAGE_PULL_POLICY="${IMAGE_PULL_POLICY:-Always}"
 
@@ -28,7 +28,7 @@ fsm install \
     --set=fsm.trafficInterceptionMode="$sidecar" \
     --set=fsm.fsmXnetwork.xnet.image.registry="$CTR_REGISTRY" \
     --set=fsm.fsmXnetwork.xnet.image.tag="$CTR_XNET_TAG" \
-    --set=fsm.sidecar.sidecarLogLevel=warn \
+    --set=fsm.sidecar.sidecarLogLevel=debug \
     --set=fsm.sidecar.compressConfig=false \
     --set=fsm.sidecar.image.registry="$CTR_REGISTRY" \
     --set=fsm.repoServer.image.registry="$CTR_REGISTRY" \
@@ -44,7 +44,7 @@ fsm install \
     --set=fsm.localDNSProxy.primaryUpstreamDNSServerIPAddr=$dns_svc_ip \
     --set fsm.fsmIngress.enabled=false \
     --set fsm.fsmGateway.enabled=true \
-    --set fsm.fsmGateway.fgwLogLevel=debug \
+    --set fsm.fsmGateway.logLevel=debug \
     --set fsm.featureFlags.enableValidateHTTPRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGRPCRouteHostnames=false \
     --set fsm.featureFlags.enableValidateTLSRouteHostnames=false \

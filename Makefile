@@ -1,6 +1,9 @@
 #!make
 
 PORT_FORWARD ?= 14001:14001
+ZOOKEEPER_PORT_FORWARD ?= 2181:2181
+ZOOWEBUI_PORT_FORWARD ?= 8081:8081
+
 WITH_MESH ?= false
 WITH_PROXY ?=
 COUNT ?= 1000
@@ -146,12 +149,12 @@ nacos-port-forward:
 
 .PHONY: zk-port-forward
 zk-port-forward:
-	export PORT_FORWARD=$(PORT_FORWARD);\
+	export ZOOKEEPER_PORT_FORWARD=$(ZOOKEEPER_PORT_FORWARD);\
 	export POD=$$(kubectl get pods --selector app=zookeeper -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
-	kubectl port-forward "$$POD" -n default "2181:2181" --address 0.0.0.0 &
-	export PORT_FORWARD=$(PORT_FORWARD);\
+	kubectl port-forward "$$POD" -n default "$$ZOOKEEPER_PORT_FORWARD" --address 0.0.0.0 &
+	export ZOOWEBUI_PORT_FORWARD=$(ZOOWEBUI_PORT_FORWARD);\
 	export POD=$$(kubectl get pods --selector app=zookeeper -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
-	kubectl port-forward "$$POD" -n default "8081:8081" --address 0.0.0.0 &
+	kubectl port-forward "$$POD" -n default "$$ZOOWEBUI_PORT_FORWARD" --address 0.0.0.0 &
 
 .PHONY: deploy-native-bookwarehouse
 deploy-native-bookwarehouse: undeploy-native-bookwarehouse

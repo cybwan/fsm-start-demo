@@ -86,6 +86,8 @@ echo c1_zookeeper_external_ip $c1_zookeeper_external_ip
 
 export c1_zookeeper_pod_ip="$(kubectl get pod -n default --selector app=zookeeper -o jsonpath='{.items[0].status.podIP}')"
 echo c1_zookeeper_pod_ip $c1_zookeeper_pod_ip
+
+#ZOOKEEPER_PORT_FORWARD=12181:2181 ZOOWEBUI_PORT_FORWARD=18081:8081 make zk-port-forward
 ```
 
 #### 2.1.4 部署 zookeeper 服务访问控制策略
@@ -105,6 +107,9 @@ spec:
   - kind: Service
     namespace: default
     name: zookeeper
+  - kind: Service
+    namespace: fsm-system
+    name: fsm-gateway-fsm-system-k8s-c1-fgw-tcp
 EOF
 ```
 
@@ -249,9 +254,11 @@ echo c2_zookeeper_external_ip $c2_zookeeper_external_ip
 
 export c2_zookeeper_pod_ip="$(kubectl get pod -n default --selector app=zookeeper -o jsonpath='{.items[0].status.podIP}')"
 echo c2_zookeeper_pod_ip $c2_zookeeper_pod_ip
+
+#ZOOKEEPER_PORT_FORWARD=22181:2181 ZOOWEBUI_PORT_FORWARD=28081:8081 make zk-port-forward
 ```
 
-#### 2.2.4 部署 zookeeper 服务访问控制策略
+#### 2.2.4 设置服务访问控制策略
 
 ```bash
 kubectl create namespace fsm-policy
@@ -268,6 +275,9 @@ spec:
   - kind: Service
     namespace: default
     name: zookeeper
+  - kind: Service
+    namespace: fsm-system
+    name: fsm-gateway-fsm-system-k8s-c2-fgw-tcp
 EOF
 ```
 
@@ -312,7 +322,7 @@ apiVersion: connector.flomesh.io/v1alpha1
 metadata:
   name: c2-fgw
 spec:
-  gatewayName: k8s-c1-fgw
+  gatewayName: k8s-c2-fgw
   ingress:
     ipSelector: ExternalIP
     httpPort: 10080
@@ -412,9 +422,11 @@ echo c3_zookeeper_external_ip $c3_zookeeper_external_ip
 
 export c3_zookeeper_pod_ip="$(kubectl get pod -n default --selector app=zookeeper -o jsonpath='{.items[0].status.podIP}')"
 echo c3_zookeeper_pod_ip $c3_zookeeper_pod_ip
+
+#ZOOKEEPER_PORT_FORWARD=32181:2181 ZOOWEBUI_PORT_FORWARD=38081:8081 make zk-port-forward
 ```
 
-#### 2.3.4 部署 zookeeper 服务访问控制策略
+#### 2.3.4 设置服务访问控制策略
 
 ```bash
 kubectl create namespace fsm-policy
@@ -431,6 +443,9 @@ spec:
   - kind: Service
     namespace: default
     name: zookeeper
+  - kind: Service
+    namespace: fsm-system
+    name: fsm-gateway-fsm-system-k8s-c3-fgw-tcp
 EOF
 ```
 
@@ -497,8 +512,8 @@ EOF
 #### 2.3.8 部署 zookeeper 微服务
 
 ```bash
-WITH_MESH=true fsm_cluster_name=c3 make deploy-zookeeper-nebula-grcp-server
-WITH_MESH=true fsm_cluster_name=c1 make deploy-zookeeper-nebula-grcp-client
+WITH_MESH=true fsm_cluster_name=c3 replicas=0 make deploy-zookeeper-nebula-grcp-server
+WITH_MESH=true fsm_cluster_name=c3 make deploy-zookeeper-nebula-grcp-client
 ```
 
 ## 3 微服务融合
@@ -509,7 +524,7 @@ WITH_MESH=true fsm_cluster_name=c1 make deploy-zookeeper-nebula-grcp-client
 kubecm switch k3d-C1
 ```
 
-#### 3.1.1 部署 zookeeper connector(c1-k8s-to-c3-zookeeper)
+#### 3.1.1 部署 zookeeper connector(c1-k8s-to-c3-zk)
 
 **c1 k8s微服务同步到c3 zookeeper**
 
@@ -518,7 +533,7 @@ kubectl apply  -f - <<EOF
 kind: ZookeeperConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c1-k8s-to-c3-zookeeper
+  name: c1-k8s-to-c3-zk
 spec:
   httpAddr: $c3_zookeeper_external_ip:2181
   deriveNamespace: none
@@ -542,7 +557,7 @@ EOF
 kubecm switch k3d-C2
 ```
 
-#### 3.2.1 部署 zookeeper connector(c2-k8s-to-c3-zookeeper)
+#### 3.2.1 部署 zookeeper connector(c2-k8s-to-c3-zk)
 
 **c2 k8s微服务同步到c3 zookeeper**
 
@@ -551,7 +566,7 @@ kubectl apply  -f - <<EOF
 kind: ZookeeperConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c2-k8s-to-c3-zookeeper
+  name: c2-k8s-to-c3-zk
 spec:
   httpAddr: $c3_zookeeper_external_ip:2181
   deriveNamespace: none
@@ -587,16 +602,16 @@ kubectl patch namespace derive-other -p '{"metadata":{"annotations":{"flomesh.io
 kubectl patch namespace derive-other -p '{"metadata":{"annotations":{"flomesh.io/cloud-service-attached-to":"derive-local"}}}'  --type=merge
 ```
 
-##### 3.3.3.2 部署 zookeeper connector(c3-zookeeper-to-c3-derive-other)
+##### 3.3.3.2 部署 zookeeper connector(c3-zk-to-c3-derive-other)
 
 ```
 kubectl apply  -f - <<EOF
 kind: ZookeeperConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c3-zookeeper-to-c3-derive-other
+  name: c3-zk-to-c3-derive-other
 spec:
-  httpAddr: $c3_zookeeper_cluster_ip:8500
+  httpAddr: $c3_zookeeper_cluster_ip:2181
   deriveNamespace: derive-other
   asInternalServices: false
   basePath: /Application/grpc
@@ -613,43 +628,11 @@ spec:
 EOF
 ```
 
-#### 3.3.5 设置云上服务 HA 策略
+#### 3.3.4 设置云上服务 HA 策略
 
 ```bash
 export fsm_namespace=fsm-system
 kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"connector":{"lb":{"type":"FailOver","masterNamespace":"derive-local","slaveNamespaces":["derive-other"]}}}}' --type=merge
-```
-
-#### 3.3.6 设置原生服务 HA 策略
-
-```bash
-cat <<EOF | kubectl apply -n derive-local -f -
-apiVersion: split.smi-spec.io/v1alpha4
-kind: TrafficSplit
-metadata:
-  name: httpbin-split-v4
-spec:
-  service: derive-local/httpbin
-  backends:
-  - service: demo/httpbin
-    weight: 100
-  - service: derive-local/httpbin
-    weight: 0
-EOF
-
-cat <<EOF | kubectl apply -n demo -f -
-apiVersion: split.smi-spec.io/v1alpha4
-kind: TrafficSplit
-metadata:
-  name: httpbin-split-v4
-spec:
-  service: demo/httpbin
-  backends:
-  - service: demo/httpbin
-    weight: 100
-  - service: derive-local/httpbin
-    weight: 0
-EOF
 ```
 
 ## 4 确认服务调用效果
@@ -661,8 +644,6 @@ export c3_client_pod_name="$(kubectl get pod -n client --selector app=nebula-grp
 echo c3_client_pod_name $c3_client_pod_name
 
 kubectl logs -n client $c3_client_pod_name -c client -f
-
-make zk-port-forward
 ```
 
 确认运行效果,返回:
