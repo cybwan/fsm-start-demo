@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+spec:
+  type: LoadBalancer
+  selector:
+    app: zookeeper
+  ports:
+    - protocol: TCP
+      port: 2181
+      targetPort: 2181
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,15 +41,3 @@ spec:
               value: "8081"
             - name: ZK_DEFAULT_NODE
               value: 127.0.0.1:2181
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: zookeeper
-spec:
-  selector:
-    app: zookeeper
-  ports:
-    - protocol: TCP
-      port: 2181
-      targetPort: 2181
