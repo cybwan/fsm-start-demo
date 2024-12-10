@@ -68,4 +68,4 @@ cd fsm-start-demo
 
 ### 2.10 场景 [Nebula-GRPC 单集群微服务融合测试](scenarios.2.10.md)
 
-### 2.11 场景 [Nebula-GRPC 多集群微服务融合测试](scenarios.2.11.md) 实现中
+### 2.11 场景 [Nebula-GRPC 多集群高可用微服务融合测试](scenarios.2.11.md)
