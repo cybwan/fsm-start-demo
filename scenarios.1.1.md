@@ -26,7 +26,7 @@ fsm_cluster_name=C1 make deploy-fsm
 ```bash
 make consul-deploy
 
-PORT_FORWARD="8501:8500" make consul-port-forward &
+PORT_FORWARD="18500:8500" make consul-port-forward &
 
 export c1_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c1_consul_cluster_ip $c1_consul_cluster_ip
@@ -73,7 +73,7 @@ fsm_cluster_name=C2 make deploy-fsm
 ```bash
 make consul-deploy
 
-PORT_FORWARD="8502:8500" make consul-port-forward &
+PORT_FORWARD="28500:8500" make consul-port-forward &
 
 export c2_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c2_consul_cluster_ip $c2_consul_cluster_ip
@@ -120,7 +120,7 @@ fsm_cluster_name=C3 make deploy-fsm
 ```bash
 make consul-deploy
 
-PORT_FORWARD="8503:8500" make consul-port-forward &
+PORT_FORWARD="38500:8500" make consul-port-forward &
 
 export c3_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c3_consul_cluster_ip $c3_consul_cluster_ip
@@ -219,29 +219,29 @@ spec:
   syncToFgw:
     enable: true
     allowK8sNamespaces:
-      - derive-consul
+      - derive-local
 EOF
 ```
 
-#### 3.1.3 创建 derive-consul namespace
+#### 3.1.3 创建 derive-local namespace
 
 ```bash
-kubectl create namespace derive-consul
-fsm namespace add derive-consul
-kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
 ```
 
-#### 3.1.4 部署 consul connector(c1-consul-to-c1-derive-consul)
+#### 3.1.4 部署 consul connector(c1-consul-to-c1-derive-local)
 
 ```
 kubectl apply  -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c1-consul-to-c1-derive-consul
+  name: c1-consul-to-c1-derive-local
 spec:
   httpAddr: $c1_consul_cluster_ip:8500
-  deriveNamespace: derive-consul
+  deriveNamespace: derive-local
   asInternalServices: true
   syncToK8S:
     enable: true
@@ -272,7 +272,7 @@ spec:
     withGateway: 
       enable: true
     allowK8sNamespaces:
-      - derive-consul
+      - derive-local
 EOF
 ```
 
@@ -343,29 +343,29 @@ spec:
   syncToFgw:
     enable: true
     allowK8sNamespaces:
-      - derive-consul
+      - derive-local
 EOF
 ```
 
-#### 3.2.3 创建 derive-consul namespace
+#### 3.2.3 创建 derive-local namespace
 
 ```bash
-kubectl create namespace derive-consul
-fsm namespace add derive-consul
-kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
 ```
 
-#### 3.2.4 部署 consul connector(c2-consul-to-c2-derive-consul)
+#### 3.2.4 部署 consul connector(c2-consul-to-c2-derive-local)
 
 ```
 kubectl apply  -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c2-consul-to-c2-derive-consul
+  name: c2-consul-to-c2-derive-local
 spec:
   httpAddr: $c2_consul_cluster_ip:8500
-  deriveNamespace: derive-consul
+  deriveNamespace: derive-local
   asInternalServices: true
   syncToK8S:
     enable: true
@@ -396,7 +396,7 @@ spec:
     withGateway: 
       enable: true
     allowK8sNamespaces:
-      - derive-consul
+      - derive-local
 EOF
 ```
 
@@ -467,29 +467,29 @@ spec:
   syncToFgw:
     enable: true
     allowK8sNamespaces:
-      - derive-consul
+      - derive-local
 EOF
 ```
 
-#### 3.3.3 创建 derive-consul namespace
+#### 3.3.3 创建 derive-local namespace
 
 ```bash
-kubectl create namespace derive-consul
-fsm namespace add derive-consul
-kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
+kubectl create namespace derive-local
+fsm namespace add derive-local
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
 ```
 
-#### 3.3.4 部署 consul connector(c3-consul-to-c3-derive-consul)
+#### 3.3.4 部署 consul connector(c3-consul-to-c3-derive-local)
 
 ```
 kubectl apply  -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c3-consul-to-c3-derive-consul
+  name: c3-consul-to-c3-derive-local
 spec:
   httpAddr: $c3_consul_cluster_ip:8500
-  deriveNamespace: derive-consul
+  deriveNamespace: derive-local
   asInternalServices: true
   syncToK8S:
     enable: true

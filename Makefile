@@ -343,12 +343,28 @@ batch-create-eureka-multi-ports-services:
 batch-delete-eureka-multi-ports-services:
 	./scripts/eureka-multi-ports-cli --action delete --count $(COUNT)
 
-.PHONY: up-scenarios-1
-up-scenarios-1:
-	./scripts/scenarios.1.sh
+.PHONY: up-scenarios-1.1
+up-scenarios-1.1:
+	./scripts/scenarios.1.1.sh
 
-.PHONY: down-scenarios-1
-down-scenarios-1:
+.PHONY: down-scenarios-1.1
+down-scenarios-1.1:
+	export clusters="C1 C2 C3";make k3d-reset
+
+.PHONY: up-scenarios-1.2
+up-scenarios-1.2:
+	./scripts/scenarios.1.2.sh
+
+.PHONY: down-scenarios-1.2
+down-scenarios-1.2:
+	export clusters="C1 C2 C3";make k3d-reset
+
+.PHONY: up-scenarios-1.3
+up-scenarios-1.3:
+	./scripts/scenarios.1.3.sh
+
+.PHONY: down-scenarios-1.3
+down-scenarios-1.3:
 	export clusters="C1 C2 C3";make k3d-reset
 
 .PHONY: up-scenarios-2

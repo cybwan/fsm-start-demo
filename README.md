@@ -20,7 +20,7 @@ git clone https://github.com/cybwan/fsm-start-demo.git -b connector
 cd fsm-start-demo
 ```
 
-## 场景一: [Consul 跨集群微服务融合](scenarios.1.md)
+## 场景一: [Consul 跨集群微服务融合](scenarios.1.1.md)
 
 ### **调用流程**
 
