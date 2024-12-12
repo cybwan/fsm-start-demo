@@ -357,6 +357,33 @@ deploy-zookeeper-nebula-grcp-client:
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n client -l app=nebula-grpc-client --timeout=180s
 
+.PHONY: deploy-zookeeper-dubbo-bookwarehouse
+deploy-zookeeper-dubbo-bookwarehouse:
+	kubectl delete namespace bookwarehouse --ignore-not-found
+	kubectl create namespace bookwarehouse
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookwarehouse; fi
+	kubectl apply -n bookwarehouse -f ./manifests/zookeeper/dubbo/bookwarehouse.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
+
+.PHONY: deploy-zookeeper-dubbo-bookstore
+deploy-zookeeper-dubbo-bookstore:
+	kubectl delete namespace bookstore --ignore-not-found
+	kubectl create namespace bookstore
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookstore; fi
+	kubectl apply -n bookstore -f ./manifests/zookeeper/dubbo/bookstore.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookstore -l app=bookstore --timeout=180s
+
+.PHONY: deploy-zookeeper-dubbo-bookbuyer
+deploy-zookeeper-dubbo-bookbuyer:
+	kubectl delete namespace bookbuyer --ignore-not-found
+	kubectl create namespace bookbuyer
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookbuyer; fi
+	kubectl apply -n bookbuyer -f ./manifests/zookeeper/dubbo/bookbuyer.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
+
 port-forward-fsm-repo:
 	export PORT_FORWARD=$(PORT_FORWARD);\
 	export POD=$$(kubectl get pods --selector app=fsm-controller -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
