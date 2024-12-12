@@ -17,7 +17,10 @@ pull-images:
 	$(call pull,nacos/nacos-server:v2.3.0-slim,docker.io,localhost:5000)
 	$(call pull,zookeeper:3.6.2,docker.io,localhost:5000)
 	$(call pull,tobilg/zookeeper-webui:latest,docker.io,localhost:5000)
-	$(call pull,cybwan/springboot-demo:latest,docker.io,localhost:5000)
+	$(call pull,cybwan/springboot-consul-demo:latest,docker.io,localhost:5000)
+	$(call pull,cybwan/springboot-eureka-demo:latest,docker.io,localhost:5000)
+	$(call pull,cybwan/springboot-nacos-demo:latest,docker.io,localhost:5000)
+	$(call pull,cybwan/springboot-dubbo-demo:latest,docker.io,localhost:5000)
 	$(call pull,cybwan/grpc-server:latest,docker.io,localhost:5000)
 	$(call pull,cybwan/grpc-client:latest,docker.io,localhost:5000)
 

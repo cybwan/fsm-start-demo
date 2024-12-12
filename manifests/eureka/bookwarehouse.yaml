@@ -72,7 +72,7 @@ spec:
     spec:
       containers:
         - name: bookwarehouse
-          image: cybwan/springboot-demo:latest
+          image: cybwan/springboot-eureka-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001

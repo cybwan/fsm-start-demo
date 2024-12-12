@@ -384,6 +384,24 @@ deploy-zookeeper-dubbo-bookbuyer:
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
 
+.PHONY: deploy-zookeeper-dubbo-httpbin
+deploy-zookeeper-dubbo-httpbin:
+	kubectl delete namespace httpbin --ignore-not-found
+	kubectl create namespace httpbin
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
+	kubectl apply -n httpbin -f ./manifests/zookeeper/dubbo/httpbin.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
+
+.PHONY: deploy-zookeeper-dubbo-curl
+deploy-zookeeper-dubbo-curl:
+	kubectl delete namespace curl --ignore-not-found
+	kubectl create namespace curl
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
+	kubectl apply -n curl -f ./manifests/zookeeper/dubbo/curl.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
+
 port-forward-fsm-repo:
 	export PORT_FORWARD=$(PORT_FORWARD);\
 	export POD=$$(kubectl get pods --selector app=fsm-controller -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\

@@ -65,7 +65,7 @@ spec:
     spec:
       containers:
         - name: httpbin
-          image: cybwan/springboot-demo:latest
+          image: cybwan/springboot-nacos-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001

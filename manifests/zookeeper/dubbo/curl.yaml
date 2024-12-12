@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: dubbo-bookwarehouse-application-yml
+  name: dubbo-curl-application-yml
 data:
   application.yml: |
     spring:
@@ -10,7 +10,7 @@ data:
         default:
           - "dubbo"
       application:
-        name: bookwarehouse
+        name: curl
     logging:
       level:
         org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
@@ -32,17 +32,13 @@ data:
   application-dubbo.yml: |
     service:
       version:
-        bookwarehouse: v1
-        bookstore: v1
+        curl: v1
     dubbo:
       enabled: true
       scan:
-        base-packages: io.flomesh.demo.dubbo
+        base-packages: io.flomesh.demo.simple.dubbo
       registry:
         address: zookeeper://zookeeper.default:2181
-    spring:
-      main:
-        web-application-type: none #disable web server
     grpc:
       server:
         port: -1 #disable grpc server
@@ -50,23 +46,23 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bookwarehouse
+  name: curl
   labels:
     version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: bookwarehouse
+      app: curl
       version: v1
   template:
     metadata:
       labels:
-        app: bookwarehouse
+        app: curl
         version: v1
     spec:
       containers:
-        - name: bookwarehouse
+        - name: curl
           image: cybwan/springboot-dubbo-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
@@ -75,18 +71,18 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: 'dubbo'
             - name: IDENTITY
-              value: bookwarehouse
+              value: curl
             - name: JAVA_OPTS
               value: -Xms256M -Xmx512M
             - name: JAVA_TOOL_OPTIONS
-              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=bookwarehouse
+              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=curl
           command: ['java']
           args: [
             "-Dotel.traces.exporter=none",
             "-Dotel.metrics.exporter=none",
             "-Dotel.propagators=tracecontext,baggage,b3multi",
             "-jar",
-            "bookwarehouse-dubbo.jar",
+            "curl-dubbo.jar",
           ]
           volumeMounts:
             - mountPath: /config
@@ -94,7 +90,7 @@ spec:
       volumes:
         - name: javacfg
           configMap:
-            name: dubbo-bookwarehouse-application-yml
+            name: dubbo-curl-application-yml
             items:
               - key: "application.yml"
                 path: "application.yml"

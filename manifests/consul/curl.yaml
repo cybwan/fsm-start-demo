@@ -80,7 +80,7 @@ spec:
     spec:
       containers:
         - name: curl
-          image: cybwan/springboot-demo:latest
+          image: cybwan/springboot-consul-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001
