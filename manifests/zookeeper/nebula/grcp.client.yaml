@@ -47,10 +47,6 @@ spec:
           image: cybwan/grpc-client
           imagePullPolicy: Always
           command: [ "java", "-jar", "grpc-client-1.0.0.jar" ]
-        - name: curl
-          image: cybwan/ubuntu:22.04
-          imagePullPolicy: IfNotPresent
-          command: [ "sleep", "365d" ]
           volumeMounts:
             - mountPath: /app/config
               name: javacfg
