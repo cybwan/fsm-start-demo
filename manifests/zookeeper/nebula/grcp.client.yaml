@@ -1,3 +1,31 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grpc-client-config-properties
+data:
+  dfzq-grpc-config.properties: |
+    # ------------ begin of common config ------------
+    # 必填,类型string,说明:当前应用名称
+    common.application=grpc-client
+    # 必填,类型string,说明:当前项目名
+    common.project=grpc-client
+    # 必填,类型string,说明:项目负责人,员工工号,多个工号之间使用英文逗号
+    common.owner=A7022
+    # 可选,类型string,说明:服务注册使用的IP地址
+    # 如果不配置该参数值，当前服务器的IP地址为"非127.0.0.1的第一个网卡的IP地址"
+    # 使用场合:一台服务器安装有多个网卡,如果需要指定不是第一个网卡的IP地址为服务注册的IP地址
+    #common.localhost.ip=xxx.xxx.xxx.xxx
+    #------------- end of common config ------------
+    # ------------ begin of provider config ------------
+    consumer.loadbalance.mode=request
+    # ------------ end of provider config ------------
+    # ------------ begin of zookeeper config -------
+    # zookeeper主机列表
+    zookeeper.host.server=zookeeper.default:2181
+    zookeeper.sessiontimeout=30000
+  # ------------ end of zookeeper config ------------
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,3 +51,13 @@ spec:
           image: cybwan/ubuntu:22.04
           imagePullPolicy: IfNotPresent
           command: [ "sleep", "365d" ]
+          volumeMounts:
+            - mountPath: /app/config
+              name: javacfg
+      volumes:
+        - name: javacfg
+          configMap:
+            name: grpc-client-config-properties
+            items:
+              - key: "dfzq-grpc-config.properties"
+                path: "dfzq-grpc-config.properties"
