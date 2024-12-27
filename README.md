@@ -64,11 +64,11 @@ cd fsm-start-demo
 
 ### 3.2 多集群微服务融合测试
 
-#### 3.2.1 Consul 多集群微服务融合测试 [Pod Level](scenarios.3.2.1.PL.md) ✓ | [Node Level](scenarios.3.2.1.NL.md) ✓
+#### 3.2.1 Consul HTTP 多集群微服务融合测试 [Pod Level](scenarios.3.2.1.PL.md) ✓ | [Node Level](scenarios.3.2.1.NL.md) ✓
 
-#### 3.2.2 Eureka 多集群微服务融合测试 [Pod Level](scenarios.3.2.2.PL.md) ✓ | [Node Level](scenarios.3.2.2.NL.md)
+#### 3.2.2 Eureka HTTP 多集群微服务融合测试 [Pod Level](scenarios.3.2.2.PL.md) ✓ | [Node Level](scenarios.3.2.2.NL.md)
 
-#### 3.2.3 Nacos 多集群微服务融合测试 [Pod Level](scenarios.3.2.1.PL.md) | [Node Level](scenarios.3.2.1.NL.md)
+#### 3.2.3 Nacos HTTP 多集群微服务融合测试 [Pod Level](scenarios.3.2.3.PL.md) ✓ | [Node Level](scenarios.3.2.3.NL.md)
 
 #### 3.2.4 Nebula gRPC 多集群微服务融合测试 [Pod Level](scenarios.3.2.1.PL.md) | [Node Level](scenarios.3.2.1.NL.md)
 
