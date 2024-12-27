@@ -1,4 +1,4 @@
-# 场景 Nacos 多集群微服务融合测试
+# 场景 Consul & Eureka & Nacos 跨集群混合架构微服务融合
 
 ## 1 部署 C1 C2 C3 三个集群
 
@@ -20,20 +20,20 @@ kubecm switch k3d-C1
 fsm_cluster_name=C1 sidecar=PodLevel make deploy-fsm
 ```
 
-#### 2.1.2 部署 Nacos 微服务
+#### 2.1.2 部署 Consul 微服务
 
 ```bash
-make nacos-deploy
-#PORT_FORWARD="18848:8848" make nacos-port-forward &
+make consul-deploy
+#PORT_FORWARD="8500:8500" make consul-port-forward &
 
-export c1_nacos_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=nacos -o jsonpath='{.items[0].spec.clusterIP}')"
-echo c1_nacos_cluster_ip $c1_nacos_cluster_ip
+export c1_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
+echo c1_consul_cluster_ip $c1_consul_cluster_ip
 
-export c1_nacos_external_ip="$(kubectl get svc -n default --field-selector metadata.name=nacos -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
-echo c1_nacos_external_ip $c1_nacos_external_ip
+export c1_consul_external_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+echo c1_consul_external_ip $c1_consul_external_ip
 
-export c1_nacos_pod_ip="$(kubectl get pod -n default --selector app=nacos -o jsonpath='{.items[0].status.podIP}')"
-echo c1_nacos_pod_ip $c1_nacos_pod_ip
+export c1_consul_pod_ip="$(kubectl get pod -n default --selector app=consul -o jsonpath='{.items[0].status.podIP}')"
+echo c1_consul_pod_ip $c1_consul_pod_ip
 
 kubectl create namespace fsm-policy
 fsm namespace add fsm-policy
@@ -48,10 +48,10 @@ spec:
   sources:
   - kind: Service
     namespace: default
-    name: nacos
+    name: consul
 EOF
 
-WITH_MESH=true make deploy-nacos-bookwarehouse
+WITH_MESH=true make deploy-consul-bookwarehouse
 ```
 
 ### 2.2 C2集群
@@ -66,20 +66,20 @@ kubecm switch k3d-C2
 fsm_cluster_name=C2 sidecar=PodLevel make deploy-fsm
 ```
 
-#### 2.2.2 部署 Nacos 微服务
+#### 2.2.2 部署 Eureka 微服务
 
 ```bash
-make nacos-deploy
-#PORT_FORWARD="28848:8848" make nacos-port-forward &
+make eureka-deploy
+#PORT_FORWARD="8761:8761" make eureka-port-forward &
 
-export c2_nacos_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=nacos -o jsonpath='{.items[0].spec.clusterIP}')"
-echo c2_nacos_cluster_ip $c2_nacos_cluster_ip
+export c2_eureka_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=eureka -o jsonpath='{.items[0].spec.clusterIP}')"
+echo c2_eureka_cluster_ip $c2_eureka_cluster_ip
 
-export c2_nacos_external_ip="$(kubectl get svc -n default --field-selector metadata.name=nacos -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
-echo c2_nacos_external_ip $c2_nacos_external_ip
+export c2_eureka_external_ip="$(kubectl get svc -n default --field-selector metadata.name=eureka -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+echo c2_eureka_external_ip $c2_eureka_external_ip
 
-export c2_nacos_pod_ip="$(kubectl get pod -n default --selector app=nacos -o jsonpath='{.items[0].status.podIP}')"
-echo c2_nacos_pod_ip $c2_nacos_pod_ip
+export c2_eureka_pod_ip="$(kubectl get pod -n default --selector app=eureka -o jsonpath='{.items[0].status.podIP}')"
+echo c2_eureka_pod_ip $c2_eureka_pod_ip
 
 kubectl create namespace fsm-policy
 fsm namespace add fsm-policy
@@ -94,10 +94,10 @@ spec:
   sources:
   - kind: Service
     namespace: default
-    name: nacos
+    name: eureka
 EOF
 
-WITH_MESH=true make deploy-nacos-bookstore
+WITH_MESH=true make deploy-eureka-bookstore
 ```
 
 ### 2.3 C3集群
@@ -116,7 +116,7 @@ fsm_cluster_name=C3 sidecar=PodLevel make deploy-fsm
 
 ```bash
 make nacos-deploy
-#PORT_FORWARD="38848:8848" make nacos-port-forward &
+#PORT_FORWARD="8848:8848" make nacos-port-forward &
 
 export c3_nacos_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=nacos -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c3_nacos_cluster_ip $c3_nacos_cluster_ip
@@ -215,32 +215,33 @@ spec:
   syncToFgw:
     enable: true
     allowK8sNamespaces:
-      - derive-local
+      - derive-consul
 EOF
 ```
 
-#### 3.1.3 创建 derive-local namespace
+#### 3.1.3 创建 derive-consul namespace
 
 ```bash
-kubectl create namespace derive-local
-fsm namespace add derive-local
-kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
+kubectl create namespace derive-consul
+fsm namespace add derive-consul
+kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
 ```
 
-#### 3.1.4 部署 nacos connector(c1-nacos-to-c1-derive-local)
+#### 3.1.4 部署 consul connector(c1-consul-to-c1-derive-consul)
 
 ```
 kubectl apply  -f - <<EOF
-kind: NacosConnector
+kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c1-nacos-to-c1-derive-local
+  name: c1-consul-to-c1-derive-consul
 spec:
-  httpAddr: $c1_nacos_cluster_ip:8848
-  deriveNamespace: derive-local
+  httpAddr: $c1_consul_cluster_ip:8500
+  deriveNamespace: derive-consul
   asInternalServices: true
   syncToK8S:
     enable: true
+    generateInternalServiceHealthCheck: true
     withGateway: 
       enable: true
   syncFromK8S:
@@ -248,18 +249,18 @@ spec:
 EOF
 ```
 
-#### 3.1.5 部署 nacos connector(c1-k8s-to-c2-nacos)
+#### 3.1.5 部署 eureka connector(c1-k8s-to-c2-eureka)
 
-**c1 k8s微服务同步到c2 nacos**
+**c1 k8s微服务同步到c2 eureka**
 
 ```
 kubectl apply  -f - <<EOF
-kind: NacosConnector
+kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c1-k8s-to-c2-nacos
+  name: c1-k8s-to-c2-eureka
 spec:
-  httpAddr: $c2_nacos_external_ip:8848
+  httpAddr: http://$c2_eureka_external_ip:8761/eureka
   deriveNamespace: none
   syncToK8S:
     enable: false
@@ -268,7 +269,7 @@ spec:
     withGateway: 
       enable: true
     allowK8sNamespaces:
-      - derive-local
+      - derive-consul
 EOF
 ```
 
@@ -339,29 +340,29 @@ spec:
   syncToFgw:
     enable: true
     allowK8sNamespaces:
-      - derive-local
+      - derive-eureka
 EOF
 ```
 
-#### 3.2.3 创建 derive-local namespace
+#### 3.2.3 创建 derive-eureka namespace
 
 ```bash
-kubectl create namespace derive-local
-fsm namespace add derive-local
-kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
+kubectl create namespace derive-eureka
+fsm namespace add derive-eureka
+kubectl patch namespace derive-eureka -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"eureka"}}}'  --type=merge
 ```
 
-#### 3.2.4 部署 nacos connector(c2-nacos-to-c2-derive-local)
+#### 3.2.4 部署 eureka connector(c2-eureka-to-c2-derive-eureka)
 
 ```
 kubectl apply  -f - <<EOF
-kind: NacosConnector
+kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c2-nacos-to-c2-derive-local
+  name: c2-eureka-to-c2-derive-eureka
 spec:
-  httpAddr: $c2_nacos_cluster_ip:8848
-  deriveNamespace: derive-local
+  httpAddr: http://$c2_eureka_cluster_ip:8761/eureka
+  deriveNamespace: derive-eureka
   asInternalServices: true
   syncToK8S:
     enable: true
@@ -392,7 +393,7 @@ spec:
     withGateway: 
       enable: true
     allowK8sNamespaces:
-      - derive-local
+      - derive-eureka
 EOF
 ```
 
@@ -463,29 +464,29 @@ spec:
   syncToFgw:
     enable: true
     allowK8sNamespaces:
-      - derive-local
+      - derive-nacos
 EOF
 ```
 
-#### 3.3.3 创建 derive-local namespace
+#### 3.3.3 创建 derive-nacos namespace
 
 ```bash
-kubectl create namespace derive-local
-fsm namespace add derive-local
-kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
+kubectl create namespace derive-nacos
+fsm namespace add derive-nacos
+kubectl patch namespace derive-nacos -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
 ```
 
-#### 3.3.4 部署 nacos connector(c3-nacos-to-c3-derive-local)
+#### 3.3.4 部署 nacos connector(c3-nacos-to-c3-derive-nacos)
 
 ```
 kubectl apply  -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c3-nacos-to-c3-derive-local
+  name: c3-nacos-to-c3-derive-nacos
 spec:
   httpAddr: $c3_nacos_cluster_ip:8848
-  deriveNamespace: derive-local
+  deriveNamespace: derive-nacos
   asInternalServices: true
   syncToK8S:
     enable: true
