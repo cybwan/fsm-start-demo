@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 场景 Nebula-GRPC 多集群微服务融合测试
+# 场景 Nebula gRPC 多集群高可用微服务融合测试
 
 ## 1 部署 K8S 三个集群
 
