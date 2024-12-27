@@ -1,4 +1,4 @@
-# MESH2 业务场景测试
+# MESH 业务场景测试
 
 ## 1 部署要求
 
@@ -29,14 +29,14 @@ fi
 ### 1.3 下载并安装 fsm 命令行工具
 
 ```bash
-https://github.com/cybwan/fsm/releases/tag/v1.5.0-alpha.4
+https://github.com/cybwan/fsm/releases/tag/v1.5.0-alpha.5
 ```
 
 ### 1.4 设置环境变量
 
 ```bash
 export CTR_REGISTRY=cybwan
-export CTR_TAG=1.5.0-alpha.4
+export CTR_TAG=1.5.0-alpha.5
 ```
 
 ### 1.5 下载 DEMO 工程
@@ -46,9 +46,9 @@ git https://github.com/cybwan/fsm-start-demo.git -b mesh2
 cd fsm-start-demo
 ```
 
-## 2 业务场景测试
+## 2 基础业务场景测试
 
-### 2.1    场景 [HTTP 业务测试](scenarios.2.1.md)
+### 2.1   场景 [HTTP 业务测试](scenarios.2.1.md)
 
 ### 2.2   场景 [DNS 业务测试](scenarios.2.2.md)
 
@@ -58,9 +58,17 @@ cd fsm-start-demo
 
 ### 2.5   场景 [熔断测试](scenarios.5.md) 待续
 
-### 2.6   场景 [Nacos 单集群微服务融合测试](scenarios.2.6.md)
+## 3 融合业务场景测试
 
-### 2.7   场景 [Consul 多集群微服务融合测试](scenarios.2.7.md)
+### 3.1 单集群微服务融合测试
+
+### 3.2 多集群微服务融合测试
+
+#### 3.2.1   Consul 多集群微服务融合测试 [Pod Level](scenarios.3.2.1.PL.md) [Node Level](scenarios.3.2.1.NL.md)
+
+### 3.3 混合架构微服务融合测试
+
+### 2.6   场景 [Nacos 单集群微服务融合测试](scenarios.2.6.md)
 
 ### 2.8   场景 [Consul & Eureka & Nacos 混合架构微服务融合测试](scenarios.2.8.md)
 
@@ -69,3 +77,9 @@ cd fsm-start-demo
 ### 2.10 场景 [Nebula-GRPC 单集群微服务融合测试](scenarios.2.10.md)
 
 ### 2.11 场景 [Nebula-GRPC 多集群高可用微服务融合测试](scenarios.2.11.md)
+
+### 2.12 场景 Dubbo 单集群微服务融合测试
+
+#### 2.12.1 [Pod Level](scenarios.2.12.1.md) 进行中
+
+#### 2.12.1 [Node Level](scenarios.2.12.2.md) 进行中

@@ -1,6 +1,6 @@
 #!make
 
-PORT_FORWARD ?= 14001:14001
+PORT_FORWARD ?= 6060:6060
 ZOOKEEPER_PORT_FORWARD ?= 2181:2181
 ZOOWEBUI_PORT_FORWARD ?= 8081:8081
 
@@ -437,14 +437,6 @@ up-scenarios-2.6:
 down-scenarios-2.6:
 	export clusters="C1";make k3d-reset
 
-.PHONY: up-scenarios-2.7
-up-scenarios-2.7:
-	./scripts/scenarios.2.7.sh
-
-.PHONY: down-scenarios-2.7
-down-scenarios-2.7:
-	export clusters="C1 C2 C3";make k3d-reset
-
 .PHONY: up-scenarios-2.8
 up-scenarios-2.8:
 	./scripts/scenarios.2.8.sh
@@ -475,4 +467,16 @@ up-scenarios-2.11:
 
 .PHONY: down-scenarios-2.11
 down-scenarios-2.11:
+	export clusters="C1 C2 C3";make k3d-reset
+
+.PHONY: up-scenarios-3.2.1.PL
+up-scenarios-3.2.1.PL:
+	./scripts/scenarios.3.2.1.PL.sh
+
+.PHONY: up-scenarios-3.2.1.NL
+up-scenarios-3.2.1.NL:
+	./scripts/scenarios.3.2.1.NL.sh
+
+.PHONY: down-scenarios-3.2.1
+down-scenarios-3.2.1:
 	export clusters="C1 C2 C3";make k3d-reset
