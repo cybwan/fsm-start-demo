@@ -83,8 +83,6 @@ cd fsm-start-demo
 
 ### 2.10 场景 [Nebula-GRPC 单集群微服务融合测试](scenarios.2.10.md)
 
-### 2.11 场景 [Nebula-GRPC 多集群高可用微服务融合测试](scenarios.2.11.md)
-
 ### 2.12 场景 Dubbo 单集群微服务融合测试
 
 #### 2.12.1 [Pod Level](scenarios.2.12.1.md) 进行中
