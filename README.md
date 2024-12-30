@@ -85,10 +85,7 @@ cd fsm-start-demo
 
 #### 3.3.1 Consul & Eureka & Nacos HTTP 混合架构微服务融合测试 [Pod Level](scenarios.3.3.1.PL.md) ✓ | [Node Level](scenarios.3.3.1.NL.md) ✓
 
-
 ### 2.9   场景 [Consul 多集群微服务高可用测试](scenarios.2.9.md) 待实现
-
-### 2.10 场景 [Nebula-GRPC 单集群微服务融合测试](scenarios.2.10.md)
 
 ### 2.12 场景 Dubbo 单集群微服务融合测试
 
