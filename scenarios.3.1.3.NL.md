@@ -1,22 +1,26 @@
 # 场景 Nacos 单集群微服务融合测试
 
-## 1 部署 K8S 集群
+## 1 部署 C1 集群
 
 ```bash
-export clusters="C1"
-make k3d-up
+clusters="C1" make k3d-up
+```
+
+## 2 部署服务
+
+### 2.1 C1集群
+
+```bash
 kubecm switch k3d-C1
 ```
 
-## 2 部署网格服务
+### 2.2 部署 FSM Mesh
 
 ```bash
-fsm_cluster_name=C1 make deploy-fsm
+fsm_cluster_name=C1 sidecar=NodeLevel make deploy-fsm
 ```
 
-## 3 Nacos 单集群微服务测试
-
-### 3.1 部署 fgw
+### 2.3 部署 fgw
 
 ```bash
 kubectl apply -n fsm-system -f - <<EOF
@@ -58,16 +62,16 @@ spec:
 EOF
 ```
 
-### 3.2 部署 Nacos 服务
+### 2.4 部署 nacos 服务
 
 ```bash
-make nacos-auth-deploy
+make nacos-deploy
 
-#make nacos-deploy
+#make nacos-auth-deploy
 #kubectl patch deployments -n default nacos --type=json -p='[{"op": "add", "path": "/spec/template/spec/containers/0/env/-", "value": {"name":"NACOS_AUTH_ENABLE","value":"true"}},{"op": "add", "path": "/spec/template/spec/containers/0/env/-", "value": {"name":"NACOS_AUTH_TOKEN","value":"SecretKeyM1Z2WDc4dnVyZkQ3NmZMZjZ3RHRwZnJjNFROdkJOemEK"}},{"op": "add", "path": "/spec/template/spec/containers/0/env/-", "value": {"name":"NACOS_AUTH_IDENTITY_KEY","value":"nacos"}},{"op": "add", "path": "/spec/template/spec/containers/0/env/-", "value": {"name":"NACOS_AUTH_IDENTITY_VALUE","value":"nacos"}}]'
 #kubectl wait --all --for=condition=ready pod -n default -l app=nacos --timeout=180s
 
-#PORT_FORWARD="8848:8848" make nacos-port-forward &
+#PORT_FORWARD="18848:8848" make nacos-port-forward &
 
 export c1_nacos_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=nacos -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c1_nacos_cluster_ip $c1_nacos_cluster_ip
@@ -79,7 +83,7 @@ export c1_nacos_pod_ip="$(kubectl get pod -n default --selector app=nacos -o jso
 echo c1_nacos_pod_ip $c1_nacos_pod_ip
 ```
 
-### 3.3 配置 Nacos 服务访问控制策略
+### 2.5 配置 nacos 服务访问控制策略
 
 ```bash
 kubectl create namespace fsm-policy
@@ -98,7 +102,7 @@ spec:
 EOF
 ```
 
-### 3.4 创建 derive-nacos namespace
+### 2.6 创建 derive-nacos namespace
 
 ```bash
 kubectl create namespace derive-nacos
@@ -106,7 +110,7 @@ fsm namespace add derive-nacos
 kubectl patch namespace derive-nacos -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
 ```
 
-### 3.5 部署 nacos connector(c1-nacos-to-c1-derive-nacos)
+### 2.7 部署 nacos connector(c1-nacos-to-c1-derive-nacos)
 
 ```
 kubectl apply  -f - <<EOF
@@ -115,9 +119,6 @@ apiVersion: connector.flomesh.io/v1alpha1
 metadata:
   name: c1-nacos-to-c1-derive-nacos
 spec:
-  auth:
-    username: nacos
-    password: nacos
   httpAddr: $c1_nacos_cluster_ip:8848
   deriveNamespace: derive-nacos
   asInternalServices: true
@@ -128,7 +129,7 @@ spec:
 EOF
 ```
 
-### 3.6 部署 fgw connector
+### 2.8 部署 fgw connector
 
 ```bash
 kubectl apply  -f - <<EOF
@@ -151,48 +152,41 @@ spec:
 EOF
 ```
 
-### 3.7 部署 Nacos 微服务
+### 2.9 部署 nacos 微服务
 
 ```bash
-WITH_MESH=true make deploy-nacos-httpbin
-WITH_MESH=true make deploy-nacos-curl
+WITH_MESH=true fsm_cluster_name=c1 replicas=2 make deploy-nacos-httpbin
+WITH_MESH=true fsm_cluster_name=c1 replicas=1 make deploy-nacos-curl
 ```
 
-## 4 确认服务调用效果
+## 3 服务调用效果
 
-测试指令:
+### 3.1 切换集群
 
 ```bash
-curl_pod="$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items[0].metadata.name}')"
-kubectl exec ${curl_pod} -ncurl -c curl -- curl -s http://127.0.0.1:14001 -v
+kubecm switch k3d-C1
+export c1_curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
+echo c1_curl_pod_name $c1_curl_pod_name
 ```
 
-确认运行效果,返回:
+### 3.2 确认服务调用效果
+
+**多次执行:**
 
 ```bash
-* Expire in 0 ms for 6 (transfer 0x563ea945f680)
-*   Trying 127.0.0.1...
-* TCP_NODELAY set
-* Expire in 200 ms for 4 (transfer 0x563ea945f680)
-* Connected to 127.0.0.1 (127.0.0.1) port 14001 (#0)
-> GET / HTTP/1.1
-> Host: 127.0.0.1:14001
-> User-Agent: curl/7.64.0
-> Accept: */*
->
-< HTTP/1.1 200
-< Content-Type: text/plain;charset=UTF-8
-< Content-Length: 28
-< Date: Sun, 24 Nov 2024 02:27:39 GMT
-<
-{ [28 bytes data]
-* Connection #0 to host 127.0.0.1 left intact
-fsm-httpbin-7d964bfff8-8fkgr%
+kubectl exec -n curl $c1_curl_pod_name -c curl -- curl -s httpbin:14001
+kubectl exec -n curl $c1_curl_pod_name -c curl -- curl -s httpbin:14001
 ```
 
-## 5 卸载 K8S 集群
+**正确返回结果类似于:**
 
 ```bash
-export clusters="C1"
-make k3d-reset
+c1-httpbin-8497f8477b-lbrbv
+c1-httpbin-8497f8477b-vhrfq
+```
+
+## 4 卸载 C1 集群
+
+```bash
+clusters="C1" make k3d-reset
 ```
