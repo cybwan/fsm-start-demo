@@ -489,6 +489,18 @@ up-scenarios-3.1.3.NL:
 down-scenarios-3.1.3:
 	export clusters="C1";make k3d-reset
 
+.PHONY: up-scenarios-3.1.4.PL
+up-scenarios-3.1.4.PL:
+	./scripts/scenarios.3.1.4.PL.sh
+
+.PHONY: up-scenarios-3.1.4.NL
+up-scenarios-3.1.4.NL:
+	./scripts/scenarios.3.1.4.NL.sh
+
+.PHONY: down-scenarios-3.1.4
+down-scenarios-3.1.4:
+	export clusters="C1";make k3d-reset
+
 .PHONY: up-scenarios-3.2.1.PL
 up-scenarios-3.2.1.PL:
 	./scripts/scenarios.3.2.1.PL.sh
