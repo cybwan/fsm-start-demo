@@ -1,4 +1,4 @@
-# 场景 Consul 单集群微服务融合测试
+# 场景 Eureka 单集群微服务融合测试
 
 ## 1 部署 C1 集群
 
@@ -27,20 +27,20 @@ export fsm_namespace=fsm-system
 kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traffic":{"http1PerRequestLoadBalancing":true}}}' --type=merge
 ```
 
-### 2.4 部署 Consul 微服务
+### 2.4 部署 Eureka 微服务
 
 ```bash
-make consul-deploy
-#PORT_FORWARD="18500:8500" make consul-port-forward &
+make eureka-deploy
+#PORT_FORWARD="18761:8761" make eureka-port-forward &
 
-export c1_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
-echo c1_consul_cluster_ip $c1_consul_cluster_ip
+export c1_eureka_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=eureka -o jsonpath='{.items[0].spec.clusterIP}')"
+echo c1_eureka_cluster_ip $c1_eureka_cluster_ip
 
-export c1_consul_external_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
-echo c1_consul_external_ip $c1_consul_external_ip
+export c1_eureka_external_ip="$(kubectl get svc -n default --field-selector metadata.name=eureka -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
+echo c1_eureka_external_ip $c1_eureka_external_ip
 
-export c1_consul_pod_ip="$(kubectl get pod -n default --selector app=consul -o jsonpath='{.items[0].status.podIP}')"
-echo c1_consul_pod_ip $c1_consul_pod_ip
+export c1_eureka_pod_ip="$(kubectl get pod -n default --selector app=eureka -o jsonpath='{.items[0].status.podIP}')"
+echo c1_eureka_pod_ip $c1_eureka_pod_ip
 
 kubectl create namespace fsm-policy
 fsm namespace add fsm-policy
@@ -55,11 +55,11 @@ spec:
   sources:
   - kind: Service
     namespace: default
-    name: consul
+    name: eureka
 EOF
 
-WITH_MESH=true fsm_cluster_name=c1 replicas=2 make deploy-consul-httpbin
-WITH_MESH=true fsm_cluster_name=c3 replicas=1 make deploy-consul-curl
+WITH_MESH=true fsm_cluster_name=c1 replicas=2 make deploy-eureka-httpbin
+WITH_MESH=true fsm_cluster_name=c3 replicas=1 make deploy-eureka-curl
 ```
 
 ## 3 微服务融合
@@ -70,33 +70,32 @@ WITH_MESH=true fsm_cluster_name=c3 replicas=1 make deploy-consul-curl
 kubecm switch k3d-C1
 ```
 
-### 3.2 导入本集群 consul 微服务
+### 3.2 导入本集群 eureka 微服务
 
 #### 3.2.1 创建 derive-local namespace
 
 ```bash
 kubectl create namespace derive-local
 fsm namespace add derive-local
-kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
+kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"eureka"}}}'  --type=merge
 ```
 
-#### 3.2.2 部署 consul connector(c1-consul-to-c1-derive-local)
+#### 3.2.2 部署 eureka connector(c1-eureka-to-c1-derive-local)
 
 ```
 kubectl apply  -f - <<EOF
-kind: ConsulConnector
+kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: c1-consul-to-c1-derive-local
+  name: c1-eureka-to-c1-derive-local
 spec:
-  httpAddr: $c1_consul_cluster_ip:8500
+  httpAddr: http://$c1_eureka_cluster_ip:8761/eureka
   deriveNamespace: derive-local
   asInternalServices: true
   syncToK8S:
     enable: true
     filterIpRanges:
       - 10.101.1.0/24
-    generateInternalServiceHealthCheck: true
     withGateway: 
       enable: false
   syncFromK8S:
