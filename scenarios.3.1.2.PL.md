@@ -59,7 +59,7 @@ spec:
 EOF
 
 WITH_MESH=true fsm_cluster_name=c1 replicas=2 make deploy-eureka-httpbin
-WITH_MESH=true fsm_cluster_name=c3 replicas=1 make deploy-eureka-curl
+WITH_MESH=true fsm_cluster_name=c1 replicas=1 make deploy-eureka-curl
 ```
 
 ## 3 微服务融合
