@@ -18,12 +18,12 @@ CONSUL_VERSION ?= 1.15.4
 
 .PHONY: k3d-up
 k3d-up:
-	./scripts/k3d-with-registry-multicluster$(WITH_PROXY).sh
+	K3D_HOST_IP=$(K3D_HOST_IP) scripts/k3d-with-registry-multicluster$(WITH_PROXY).sh
 	kubecm list
 
 .PHONY: k3d-proxy-up
 k3d-proxy-up:
-	./scripts/k3d-with-registry-multicluster-with-proxy.sh
+	K3D_HOST_IP=$(K3D_HOST_IP) scripts/k3d-with-registry-multicluster-with-proxy.sh
 	kubecm list
 
 .PHONY: k3d-reset
