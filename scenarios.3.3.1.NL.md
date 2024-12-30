@@ -65,7 +65,7 @@ echo c1_fgw_pod_ip $c1_fgw_pod_ip
 
 ```bash
 make consul-deploy
-#PORT_FORWARD="8501:8500" make consul-port-forward &
+#PORT_FORWARD="18501:8500" make consul-port-forward &
 
 export c1_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c1_consul_cluster_ip $c1_consul_cluster_ip
