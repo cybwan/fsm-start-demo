@@ -170,7 +170,7 @@ spec:
 EOF
 ```
 
-#### 2.1.8 部署 zookeeper 微服务
+#### 2.1.8 部署 nebula grpc 微服务
 
 ```bash
 WITH_MESH=true fsm_cluster_name=c1 make deploy-zookeeper-nebula-grcp-server
@@ -338,7 +338,7 @@ spec:
 EOF
 ```
 
-#### 2.2.8 部署 zookeeper 微服务
+#### 2.2.8 部署 nebula grpc 微服务
 
 ```bash
 WITH_MESH=true fsm_cluster_name=c2 make deploy-zookeeper-nebula-grcp-server
@@ -509,7 +509,7 @@ spec:
 EOF
 ```
 
-#### 2.3.8 部署 zookeeper 微服务
+#### 2.3.8 部署 nebula grpc 微服务
 
 ```bash
 WITH_MESH=true fsm_cluster_name=c3 replicas=0 make deploy-zookeeper-nebula-grcp-server
