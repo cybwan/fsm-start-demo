@@ -74,6 +74,8 @@ kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"warmu
 
 **服务级别 > Namespace级别 > 全局级别**
 
+**注: 因为codebase 每 10 秒 reload 一次,即慢启动预热所分配的权重每 10 秒更新一次**
+
 ## 3 卸载 K8S 集群
 
 ```bash
