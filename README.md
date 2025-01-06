@@ -96,11 +96,3 @@ cd fsm-start-demo
 #### 3.4.3 Nacos HTTP 多集群微服务融合测试 [Pod Level](scenarios.3.4.3.PL.md) | [Node Level](scenarios.3.4.3.NL.md)
 
 #### 3.4.4 Nebula gRPC 多集群微服务融合测试 [Pod Level](scenarios.3.4.4.PL.md) | [Node Level](scenarios.3.4.4.NL.md)
-
-### 2.9   场景 [Consul 多集群微服务高可用测试](scenarios.2.9.md) 待实现
-
-### 2.12 场景 Dubbo 单集群微服务融合测试
-
-#### 2.12.1 [Pod Level](scenarios.2.12.1.md) 进行中
-
-#### 2.12.1 [Node Level](scenarios.2.12.2.md) 进行中
