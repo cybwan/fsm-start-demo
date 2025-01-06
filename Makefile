@@ -34,6 +34,41 @@ k3d-reset:
 deploy-fsm:
 	fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) scripts/deploy-fsm.sh
 
+tail-fsm-controller-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-controller-logs.sh
+
+tail-fsm-injector-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-injector-logs.sh
+
+.PHONY: tail-fgw-sidecar
+tail-fgw-sidecar:
+	export POD=$$(kubectl get pods --selector app=fsm-gateway -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl logs "$$POD" -n fsm-system -c gateway -f
+
+tail-fsm-consul-connector-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-consul-connector-logs.sh
+
+tail-fsm-eureka-connector-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-eureka-connector-logs.sh
+
+tail-fsm-nacos-connector-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-nacos-connector-logs.sh
+
+tail-fsm-zookeeper-connector-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-zookeeper-connector-logs.sh
+
+tail-fsm-gateway-connector-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-gateway-connector-logs.sh
+
+tail-fsm-machine-connector-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-machine-connector-logs.sh
+
+tail-fsm-xnetwork-xmgt-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-xnetwork-xmgt-logs.sh
+
+tail-fsm-xnetwork-xnet-logs:
+	cd ${FSM_HOME};./demo/tail-fsm-xnetwork-xnet-logs.sh
+
 .PHONY: mount-debugfs
 mount-debugfs:
 	export INTERCEPTOR_POD=$$(kubectl get pods --selector app=fsm-interceptor -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
