@@ -36,7 +36,7 @@ https://github.com/cybwan/fsm/releases/tag/v1.5.0-alpha.5
 
 ```bash
 export CTR_REGISTRY=cybwan
-export CTR_TAG=1.5.0-alpha.5
+export CTR_TAG=1.5.0-alpha.11
 export K3D_HOST_IP=192.168.127.91 #调整为你的本地IP
 ```
 

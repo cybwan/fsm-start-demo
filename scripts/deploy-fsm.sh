@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 CTR_REGISTRY="${CTR_REGISTRY:-cybwan}"
-CTR_TAG="${CTR_TAG:-1.5.0-alpha.4}"
+CTR_TAG="${CTR_TAG:-1.5.0-alpha.11}"
 CTR_XNET_TAG="${CTR_XNET_TAG:-latest}"
 IMAGE_PULL_POLICY="${IMAGE_PULL_POLICY:-Always}"
 
