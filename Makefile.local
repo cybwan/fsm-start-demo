@@ -42,6 +42,12 @@ switch-images-to-remote:
 	@cd manifests;find . -type f | xargs sed -i 's#image: localhost:5000/tobilg#image: tobilg#g'
 	@cd manifests;find . -type f | xargs sed -i 's#image: localhost:5000/cybwan#image: cybwan#g'
 
+.PHONY: local
+local: switch-images-to-local
+
+.PHONY: remote
+remote: switch-images-to-remote
+
 .PHONY: md2sh
 md2sh:
 	@find . -type f -name "scenarios.*.sh" -exec sed -i "s/\`\`\`/###/g" {} +
