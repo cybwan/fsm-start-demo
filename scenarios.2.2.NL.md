@@ -57,7 +57,7 @@ kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- bash -c "xnat nat add --
 
 #### 3.3.1 测试存在的域名
 
-测试指令 一:
+测试指令:
 
 ```bash
 curl_pod="$(kubectl get pod -n mesh-in -l app=curl -o jsonpath='{.items[0].metadata.name}')"
@@ -67,44 +67,16 @@ kubectl exec ${curl_pod} -n mesh-in -c curl -- nslookup www.baidu.com
 返回结果如下:
 
 ```bash
+;; Got recursion not available from 10.101.2.10
 Server:		10.101.2.10
 Address:	10.101.2.10#53
 
 Non-authoritative answer:
-www.baidu.com	canonical name = www.a.shifen.com.
-Name:	www.a.shifen.com
-Address: 39.156.66.14
-Name:	www.a.shifen.com
-Address: 39.156.66.18
-;; Got recursion not available from 10.101.2.10
 Name:	www.baidu.com.mesh-in.svc.cluster.local
-Address: ::1.1.1.1
+Address: 1.1.1.1
 ```
 
-测试指令 二:
-
-```bash
-curl_pod="$(kubectl get pod -n mesh-in -l app=curl -o jsonpath='{.items[0].metadata.name}')"
-kubectl exec ${curl_pod} -n mesh-in -c curl -- curl www.baidu.com -sI
-```
-
-返回结果如下:
-
-```bash
-HTTP/1.1 200 OK
-Connection: close
-Content-Length: 277
-Accept-Ranges: bytes
-Cache-Control: private, no-cache, no-store, proxy-revalidate, no-transform
-Content-Type: text/html
-Date: Wed, 08 Jan 2025 03:31:28 GMT
-Etag: "575e1f59-115"
-Last-Modified: Mon, 13 Jun 2016 02:50:01 GMT
-Pragma: no-cache
-Server: bfe/1.0.8.18
-```
-
-### 3.3.2 测试不存在的域名
+#### 3.3.2 测试不存在的域名
 
 测试指令:
 
@@ -124,8 +96,6 @@ Non-authoritative answer:
 Name:	not_exist_domain.mesh-in.svc.cluster.local
 Address: 1.1.1.1
 ;; Got recursion not available from 10.101.2.10
-Name:	not_exist_domain.mesh-in.svc.cluster.local
-Address: ::1.1.1.1
 ```
 
 ## 4 卸载 K8S 集群
