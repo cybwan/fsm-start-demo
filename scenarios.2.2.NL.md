@@ -40,6 +40,8 @@ echo $dns_svc_ip
 
 ```bash
 export xnetwork_pod=$(kubectl get pods --selector app=fsm-xnetwork -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $1}')
+#启用 TCP 默认放行策略
+kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- xnat cfg set --ipv4_tcp_proto_allow_all=1
 #禁用 UDP 默认放行策略
 kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- xnat cfg set --ipv4_udp_proto_allow_all=0
 #启用 UDP 按端口转发
