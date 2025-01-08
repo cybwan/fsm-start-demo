@@ -458,7 +458,7 @@ down-scenarios-2.1:
 
 .PHONY: up-scenarios-2.2
 up-scenarios-2.2:
-	./scripts/scenarios.2.2.sh
+	./scripts/scenarios.2.2.NL.sh
 
 .PHONY: down-scenarios-2.2
 down-scenarios-2.2:

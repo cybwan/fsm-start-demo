@@ -49,9 +49,9 @@ cd fsm-start-demo
 
 ## 2 基础业务场景测试
 
-### 2.1   场景 [HTTP 业务测试](scenarios.2.1.md) ✓
+### 2.1   场景 HTTP 业务测试 [Node Level](scenarios.2.1.md) ✓
 
-### 2.2   场景 [DNS 业务测试](scenarios.2.2.md) ✓
+### 2.2   场景 DNS 业务测试 [Node Level](scenarios.2.2.NL.md) ✓
 
 ### 2.3   场景 [灰度测试](scenarios.3.md) 待续
 
@@ -59,7 +59,7 @@ cd fsm-start-demo
 
 ### 2.5   场景 [熔断测试](scenarios.5.md) 待续
 
-### 2.6   场景 [慢启动预热策略测试](scenarios.2.6.md) ✓
+### 2.6   场景 慢启动预热策略测试 [Pod Level](scenarios.2.6.md) ✓
 
 ## 3 融合业务场景测试
 
