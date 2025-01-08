@@ -13,7 +13,7 @@ kubecm switch k3d-C1
 ## 2 部署网格服务
 
 ###bash
-fsm_cluster_name=C1 make deploy-fsm
+fsm_cluster_name=C1 sidecar=NodeLevel make deploy-fsm
 ###
 
 ## 3 DNS 业务测试

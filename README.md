@@ -53,11 +53,11 @@ cd fsm-start-demo
 
 ### 2.2   场景 DNS 业务测试 [Node Level](scenarios.2.2.NL.md) ✓
 
-### 2.3   场景 [灰度测试](scenarios.3.md) 待续
+### 2.3   场景 灰度测试 待续
 
-### 2.4   场景 [限流测试](scenarios.4.md) 待续
+### 2.4   场景 限流测试 待续
 
-### 2.5   场景 [熔断测试](scenarios.5.md) 待续
+### 2.5   场景 熔断测试 待续
 
 ### 2.6   场景 慢启动预热策略测试 [Pod Level](scenarios.2.6.md) ✓
 
