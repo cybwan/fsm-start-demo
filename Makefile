@@ -81,6 +81,18 @@ mount-debugfs:
 shell-node:
 	kubectl node-shell k3d-c1-server-0 -- sh
 
+.PHONY: shell-node-agent0
+shell-node-agent0:
+	kubectl node-shell k3d-c1-agent-0 -- sh
+
+.PHONY: shell-node-agent1
+shell-node-agent1:
+	kubectl node-shell k3d-c1-agent-1 -- sh
+
+.PHONY: shell-node-agent2
+shell-node-agent2:
+	kubectl node-shell k3d-c1-agent-2 -- sh
+
 .PHONY: shell-xnet
 shell-xnet:
 	export XNETWORK_POD=$$(kubectl get pods --selector app=fsm-xnetwork -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
