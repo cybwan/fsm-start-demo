@@ -3,7 +3,7 @@
 ## 1 部署 K8S 集群
 
 ```bash
-clusters="C1" make k3d-up
+clusters="C1" agents=2 make k3d-up
 kubecm switch k3d-C1
 ```
 
