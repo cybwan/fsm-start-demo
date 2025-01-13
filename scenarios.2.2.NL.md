@@ -3,8 +3,7 @@
 ## 1 部署 K8S 集群
 
 ```bash
-export clusters="C1"
-make k3d-up
+clusters="C1" make k3d-up
 kubecm switch k3d-C1
 ```
 
@@ -101,6 +100,5 @@ Address: 1.1.1.1
 ## 4 卸载 K8S 集群
 
 ```bash
-export clusters="C1"
-make k3d-reset
+clusters="C1" make k3d-reset
 ```
