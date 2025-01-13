@@ -9,6 +9,8 @@ K3D_HOST_IP="${K3D_HOST_IP:-192.168.127.91}"
 K3D_NETWORK="${K3D_NETWORK:-fsm}"
 
 clusters="${clusters:-c0}"
+servers="${servers:-1}"
+agents="${agents:-0}"
 
 k3d_prefix='k3d'
 reg_name='registry.localhost'
@@ -68,8 +70,8 @@ apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
   name: ${K3D_CLUSTER_NAME}
-servers: 1
-agents: 0
+servers: ${servers}
+agents: ${agents}
 kubeAPI:
   host: "${K3D_HOST_IP}"
   hostIP: "0.0.0.0"
@@ -104,6 +106,26 @@ options:
     updateDefaultKubeconfig: true
     switchCurrentContext: true
 EOF
+
+if [ "${servers}" -gt 1 ]; then
+  no=0
+  while [ $no -lt "${servers}" ]
+  do
+  cluster=$(echo "$K3D_CLUSTER_NAME" | tr '[:upper:]' '[:lower:]')
+  kubectl node-shell k3d-"${cluster}"-server-$no -- sh -c "mkdir -p /run/flannel;echo FLANNEL_NETWORK=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_SUBNET=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_MTU=1450 >> /run/flannel/subnet.env;echo FLANNEL_IPMASQ=true >> /run/flannel/subnet.env;"
+  ((no=no+1))
+  done
+fi
+
+if [ "${agents}" -gt 0 ]; then
+  no=0
+  while [ $no -lt "$agents" ]
+  do
+  cluster=$(echo "$K3D_CLUSTER_NAME" | tr '[:upper:]' '[:lower:]')
+  kubectl node-shell k3d-"${cluster}"-agent-$no -- sh -c "mkdir -p /run/flannel;echo FLANNEL_NETWORK=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_SUBNET=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_MTU=1450 >> /run/flannel/subnet.env;echo FLANNEL_IPMASQ=true >> /run/flannel/subnet.env;"
+  ((no=no+1))
+  done
+fi
 
   ((api_port=api_port+1))
   ((port=port+1))

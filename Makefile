@@ -9,6 +9,9 @@ WITH_PROXY ?=
 COUNT ?= 1000
 
 K3D_HOST_IP ?= 192.168.127.91
+clusters ?= c0
+servers ?= 1
+agents ?= 0
 
 fsm_cluster_name ?= fsm
 sidecar ?= NodeLevel
@@ -18,12 +21,12 @@ CONSUL_VERSION ?= 1.15.4
 
 .PHONY: k3d-up
 k3d-up:
-	K3D_HOST_IP=$(K3D_HOST_IP) scripts/k3d-with-registry-multicluster$(WITH_PROXY).sh
+	K3D_HOST_IP=$(K3D_HOST_IP) clusters=${clusters} servers=$(servers) agents=$(agents) scripts/k3d-with-registry-multicluster$(WITH_PROXY).sh
 	kubecm list
 
 .PHONY: k3d-proxy-up
 k3d-proxy-up:
-	K3D_HOST_IP=$(K3D_HOST_IP) scripts/k3d-with-registry-multicluster-with-proxy.sh
+	K3D_HOST_IP=$(K3D_HOST_IP) clusters=${clusters} servers=$(servers) agents=$(agents) scripts/k3d-with-registry-multicluster-with-proxy.sh
 	kubecm list
 
 .PHONY: k3d-reset
