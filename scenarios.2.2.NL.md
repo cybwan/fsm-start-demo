@@ -3,14 +3,14 @@
 ## 1 部署 K8S 集群
 
 ```bash
-clusters="C1" agents=2 make k3d-up
+clusters="C1" make k3d-up
 kubecm switch k3d-C1
 ```
 
 ## 2 部署网格服务
 
 ```bash
-fsm_cluster_name=C1 sidecar=NodeLevel make deploy-fsm
+fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=true e4lb=false make deploy-fsm
 ```
 
 ## 3 DNS 业务测试
@@ -40,16 +40,16 @@ echo $dns_svc_ip
 ```bash
 export xnetwork_pod=$(kubectl get pods --selector app=fsm-xnetwork -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $1}')
 #启用 TCP 默认放行策略
-kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- xnat cfg set --ipv4_tcp_proto_allow_all=1
+kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- xnat cfg set --sys=mesh --ipv4_tcp_proto_allow_all=1
 #禁用 UDP 默认放行策略
-kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- xnat cfg set --ipv4_udp_proto_allow_all=0
+kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- xnat cfg set --sys=mesh --ipv4_udp_proto_allow_all=0
 #启用 UDP 按端口转发
-kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- xnat cfg set --ipv4_udp_nat_by_port_on=1
+kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- xnat cfg set --sys=mesh --ipv4_udp_nat_by_port_on=1
 
 #配置 DNS 转发策略
 export cni0_mac=$(kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- ip l show dev cni0 | grep 'link/ether '| awk '{print $2}')
-kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- bash -c "xnat nat add --addr=0.0.0.0 --port=53 --proto-udp --tc-ingress --ep-addr=$dns_svc_ip --ep-port=1153 --ep-mac=$cni0_mac"
-kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- bash -c "xnat nat add --addr=0.0.0.0 --port=53 --proto-udp --tc-egress  --ep-addr=$dns_svc_ip --ep-port=1153 --ep-mac=$cni0_mac"
+kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- bash -c "xnat nat add --sys=mesh --addr=0.0.0.0 --port=53 --proto-udp --tc-ingress --ep-addr=$dns_svc_ip --ep-port=1153 --ep-mac=$cni0_mac"
+kubectl exec $xnetwork_pod -n fsm-system -c fsm-xnet -- bash -c "xnat nat add --sys=mesh --addr=0.0.0.0 --port=53 --proto-udp --tc-egress  --ep-addr=$dns_svc_ip --ep-port=1153 --ep-mac=$cni0_mac"
 ```
 
 ### 3.3 网格内 DNS 查询测试
