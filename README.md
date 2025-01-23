@@ -43,7 +43,7 @@ export K3D_HOST_IP=192.168.127.91 #调整为你的本地IP
 ### 1.5 下载 DEMO 工程
 
 ```bash
-git https://github.com/cybwan/fsm-start-demo.git -b mesh2
+git clone https://github.com/cybwan/fsm-start-demo.git -b mesh2
 cd fsm-start-demo
 ```
 
