@@ -45,7 +45,7 @@ spec:
           - |
             pipy()
             .listen(8080)
-            .serveHTTP(new Message('Hi, I am httpbin from host:'+os.env['HOSTNAME']+' at node:'+os.env['NODENAME']+'by pipy!\n'))
+            .serveHTTP(new Message('hi, I am httpbin from host: '+os.env['HOSTNAME']+' at node: '+os.env['NODENAME']+' by pipy!\n'))
         ports:
         - containerPort: 8080
         env:
