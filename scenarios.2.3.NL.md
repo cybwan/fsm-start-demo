@@ -10,7 +10,7 @@ kubecm switch k3d-C1
 ## 2 部署网格服务
 
 ```bash
-fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=false e4lb=true make deploy-fsm
+fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=true e4lb=true make deploy-fsm
 ```
 
 ## 3 E4LB 业务测试
@@ -18,7 +18,7 @@ fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=false e4lb=true make deploy-
 ### 3.1 部署模拟业务服务
 
 ```bash
-WITH_MESH=false replicas=2 make deploy-hostname-httpbin
+WITH_MESH=false replicas=3 make deploy-hostname-httpbin
 ```
 
 ### 3.2 配置 E4LB 策略
@@ -55,11 +55,12 @@ docker exec e4lb-client /usr/bin/curl -s 172.22.0.188:80
 返回结果如下:
 
 ```bash
-hi, I am httpbin from host: httpbin-849db69c94-f9x9k at node: k3d-c1-server-0 by pipy!
-hi, I am httpbin from host: httpbin-849db69c94-xf2gf at node: k3d-c1-server-0 by pipy!
+hi, I am httpbin from host: httpbin-66d5b5b879-5nfc5 at node: k3d-c1-server-0 by pipy!
+hi, I am httpbin from host: httpbin-66d5b5b879-jb6mj at node: k3d-c1-agent-1 by pipy!
+hi, I am httpbin from host: httpbin-66d5b5b879-jb6mj at node: k3d-c1-agent-1 by pipy!
 ```
 
-调用效果是分别从两个服务实例返回.
+调用效果是分别从三个服务实例返回.
 
 ## 4 卸载 K8S 集群
 

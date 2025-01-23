@@ -57,8 +57,8 @@ if ! docker network ls --format "{{ .Name}}" | grep -q "^$K3D_NETWORK"; then doc
 
   # create cluster
 k3d cluster create \
---k3s-arg "--cluster-cidr=10.$subnet.1.0/24@server:*" \
---k3s-arg "--service-cidr=10.$subnet.2.0/24@server:*" \
+--k3s-arg "--cluster-cidr=10.$subnet.0.0/16@server:*" \
+--k3s-arg "--service-cidr=20.$subnet.0.0/16@server:*" \
 --config - <<EOF
 apiVersion: k3d.io/v1alpha5
 kind: Simple
@@ -100,26 +100,6 @@ options:
     updateDefaultKubeconfig: true
     switchCurrentContext: true
 EOF
-
-if [ "${servers}" -gt 1 ]; then
-  no=0
-  while [ $no -lt "${servers}" ]
-  do
-  cluster=$(echo "$K3D_CLUSTER_NAME" | tr '[:upper:]' '[:lower:]')
-  kubectl node-shell k3d-"${cluster}"-server-$no -- sh -c "mkdir -p /run/flannel;echo FLANNEL_NETWORK=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_SUBNET=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_MTU=1450 >> /run/flannel/subnet.env;echo FLANNEL_IPMASQ=true >> /run/flannel/subnet.env;"
-  ((no=no+1))
-  done
-fi
-
-if [ "${agents}" -gt 0 ]; then
-  no=0
-  while [ $no -lt "$agents" ]
-  do
-  cluster=$(echo "$K3D_CLUSTER_NAME" | tr '[:upper:]' '[:lower:]')
-  kubectl node-shell k3d-"${cluster}"-agent-$no -- sh -c "mkdir -p /run/flannel;echo FLANNEL_NETWORK=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_SUBNET=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_MTU=1450 >> /run/flannel/subnet.env;echo FLANNEL_IPMASQ=true >> /run/flannel/subnet.env;"
-  ((no=no+1))
-  done
-fi
 
   ((api_port=api_port+1))
   ((port=port+1))
