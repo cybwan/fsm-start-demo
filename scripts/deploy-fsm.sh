@@ -7,6 +7,7 @@ set -o pipefail
 CTR_REGISTRY="${CTR_REGISTRY:-flomesh}"
 CTR_TAG="${CTR_TAG:-1.5.0-alpha.3}"
 CTR_XNET_TAG="${CTR_XNET_TAG:-latest}"
+PIPY_REGISTRY="${PIPY_REGISTRY:-flomesh}"
 IMAGE_PULL_POLICY="${IMAGE_PULL_POLICY:-Always}"
 
 fsm_namespace="${fsm_namespace:-fsm-system}"
@@ -36,8 +37,8 @@ fsm install \
     --set=fsm.fsmXnetwork.xnet.features.e4lb="${e4lb}" \
     --set=fsm.sidecar.sidecarLogLevel=debug \
     --set=fsm.sidecar.compressConfig=false \
-    --set=fsm.sidecar.image.registry="$CTR_REGISTRY" \
-    --set=fsm.repoServer.image.registry="$CTR_REGISTRY" \
+    --set=fsm.sidecar.image.registry="$PIPY_REGISTRY" \
+    --set=fsm.repoServer.image.registry="$PIPY_REGISTRY" \
     --set=fsm.controllerLogLevel=warn \
     --set=clusterSet.region=LN \
     --set=clusterSet.zone=DL \
