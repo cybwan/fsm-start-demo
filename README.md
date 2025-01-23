@@ -35,8 +35,8 @@ https://github.com/flomesh-io/fsm/releases/tag/v1.5.0-alpha.3
 ### 1.4 设置环境变量
 
 ```bash
-export CTR_REGISTRY=flomesh
-export CTR_TAG=1.5.0-alpha.3
+export CTR_REGISTRY=cybwan
+export CTR_TAG=1.5.0-alpha.13
 export K3D_HOST_IP=192.168.127.91 #调整为你的本地IP
 ```
 
@@ -53,13 +53,15 @@ cd fsm-start-demo
 
 #### 2.2   DNS 业务测试 [Node Level](scenarios.2.2.NL.md) ✓
 
-#### 2.3   灰度测试 待续
+#### 2.3   E4LB业务测试 [Node Level](scenarios.2.3.NL.md) ✓
 
-#### 2.4   限流测试 待续
+#### 2.4   灰度测试 待续
 
-#### 2.5   熔断测试 待续
+#### 2.5   限流测试 待续
 
-#### 2.6   慢启动预热策略测试 [Pod Level](scenarios.2.6.md) ✓
+#### 2.6   熔断测试 待续
+
+#### 2.7   慢启动预热策略测试 [Pod Level](scenarios.2.7.md) ✓
 
 ## 3 融合业务场景测试
 
