@@ -15,6 +15,9 @@ fsm_mesh_name="${fsm_mesh_name:-fsm}"
 fsm_cluster_name="${fsm_cluster_name:-fsm}"
 
 sidecar="${sidecar:-NodeLevel}"
+k8s="${k8s:-false}"
+mesh="${mesh:-true}"
+e4lb="${e4lb:-false}"
 
 dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].spec.clusterIP}')"
 clusters="${clusters:-c0}"
@@ -28,6 +31,9 @@ fsm install \
     --set=fsm.trafficInterceptionMode="$sidecar" \
     --set=fsm.fsmXnetwork.xnet.image.registry="$CTR_REGISTRY" \
     --set=fsm.fsmXnetwork.xnet.image.tag="$CTR_XNET_TAG" \
+    --set=fsm.fsmXnetwork.xnet.nodePaths.k8s.enable="${k8s}" \
+    --set=fsm.fsmXnetwork.xnet.features.mesh="${mesh}" \
+    --set=fsm.fsmXnetwork.xnet.features.e4lb="${e4lb}" \
     --set=fsm.sidecar.sidecarLogLevel=debug \
     --set=fsm.sidecar.compressConfig=false \
     --set=fsm.sidecar.image.registry="$CTR_REGISTRY" \
@@ -50,4 +56,14 @@ fsm install \
     --set fsm.featureFlags.enableValidateTLSRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGatewayListenerHostname=false \
     --set=fsm.featureFlags.enableSidecarPrettyConfig=true \
+    --set=fsm.fsmBootstrap.resource.requests.cpu=0.1 \
+    --set=fsm.fsmBootstrap.resource.requests.memory=128M \
+    --set=fsm.injector.resource.requests.cpu=0.1 \
+    --set=fsm.injector.resource.requests.memory=128M \
+    --set=fsm.fsmController.resource.requests.cpu=0.1 \
+    --set=fsm.fsmController.resource.requests.memory=256M \
+    --set=fsm.fsmXnetwork.xmgt.resource.requests.cpu=0.1 \
+    --set=fsm.fsmXnetwork.xmgt.resource.requests.memory=256M \
+    --set=fsm.fsmXnetwork.xnet.resource.requests.cpu=0.1 \
+    --set=fsm.fsmXnetwork.xnet.resource.requests.memory=256M \
     --timeout=900s

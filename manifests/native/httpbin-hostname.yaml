@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: httpbin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  labels:
+    app: httpbin
+    service: httpbin
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    app: httpbin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+spec:
+  replicas: ${replicas}
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      serviceAccountName: httpbin
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - image: flomesh/pipy-nightly:latest
+        imagePullPolicy: IfNotPresent
+        name: httpbin
+        command:
+          - pipy
+          - -e
+          - |
+            pipy()
+            .listen(8080)
+            .serveHTTP(new Message('Hi, I am httpbin from host:'+os.env['HOSTNAME']+' at node:'+os.env['NODENAME']+'by pipy!\n'))
+        ports:
+        - containerPort: 8080
+        env:
+          - name: NODENAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NODEIP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.hostIP
+          - name: PODIP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP

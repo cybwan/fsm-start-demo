@@ -15,6 +15,9 @@ agents ?= 0
 
 fsm_cluster_name ?= fsm
 sidecar ?= NodeLevel
+k8s ?= false
+mesh ?= true
+e4lb ?= false
 replicas ?= 1
 
 CONSUL_VERSION ?= 1.15.4
@@ -35,7 +38,7 @@ k3d-reset:
 
 .PHONY: deploy-fsm
 deploy-fsm:
-	fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) scripts/deploy-fsm.sh
+	fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) scripts/deploy-fsm.sh
 
 tail-fsm-controller-logs:
 	cd ${FSM_HOME};./demo/tail-fsm-controller-logs.sh
@@ -247,6 +250,19 @@ deploy-native-httpbin: undeploy-native-httpbin
 undeploy-native-httpbin:
 	kubectl delete -n demo -f ./manifests/native/httpbin.yaml --ignore-not-found
 	kubectl delete -n demo -f ./manifests/native/curl.yaml --ignore-not-found
+
+.PHONY: deploy-hostname-httpbin
+deploy-hostname-httpbin: undeploy-hostname-httpbin
+	kubectl delete namespace demo --ignore-not-found
+	kubectl create namespace demo
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add demo; fi
+	replicas=$(replicas) envsubst < ./manifests/native/httpbin-hostname.yaml | kubectl apply -n demo -f -
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n demo -l app=httpbin --timeout=180s
+
+.PHONY: undeploy-hostname-httpbin
+undeploy-hostname-httpbin:
+	kubectl delete -n demo -f ./manifests/native/httpbin-hostname.yaml --ignore-not-found
 
 .PHONY: deploy-native-httpbin-fault
 deploy-native-httpbin-fault:
