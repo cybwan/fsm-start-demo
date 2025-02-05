@@ -25,7 +25,21 @@ WITH_MESH=false replicas=3 make deploy-hostname-httpbin
 
 **有如下两种方式配置 EIP:**
 
-#### 3.2.1 配置 EIP Annotations
+#### 3.2.1 配置 Annotations
+
+##### 3.2.1.1 配置 Node E4LB Annotations
+
+```bash
+kubectl patch node k3d-c1-server-0 --type=json -p='[{"op": "add", "path": "/metadata/annotations/flb.flomesh.io~1enabled", "value": "true"}]' 
+```
+
+**注:**
+
+- **如果没有 node 配置这个annotation, 则从所有 node 中选择一个**
+
+- **如果多个 node 配置这个annotation, 则从多个 node 中选择一个**
+
+##### 3.2.1.2 配置 Service EIP Annotations
 
 ```bash
 kubectl patch service -n demo httpbin --type=json -p='[{"op": "add", "path": "/metadata/annotations/flb.flomesh.io~1enabled", "value": "true"}]' 
@@ -48,6 +62,10 @@ spec:
   - k3d-c1-server-0
 EOF
 ```
+
+**注:**
+
+- **如果没有设置 nodes,则遵循 3.2.1.1 的规则**
 
 ### 3.3 部署模拟外部客户端
 
