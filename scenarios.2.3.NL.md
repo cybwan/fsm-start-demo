@@ -10,7 +10,7 @@ kubecm switch k3d-C1
 ## 2 部署网格服务
 
 ```bash
-fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=true e4lb=true make deploy-fsm
+fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=false e4lb=true make deploy-fsm
 ```
 
 ## 3 E4LB 业务测试
@@ -21,7 +21,18 @@ fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=true e4lb=true make deploy-f
 WITH_MESH=false replicas=3 make deploy-hostname-httpbin
 ```
 
-### 3.2 配置 E4LB 策略
+### 3.2 配置 EIP
+
+**有如下两种方式配置 EIP:**
+
+#### 3.2.1 配置 EIP Annotations
+
+```bash
+kubectl patch service -n demo httpbin --type=json -p='[{"op": "add", "path": "/metadata/annotations/flb.flomesh.io~1enabled", "value": "true"}]' 
+kubectl patch service -n demo httpbin --type=json -p='[{"op": "add", "path": "/metadata/annotations/flb.flomesh.io~1desired-ip", "value": "172.22.0.188"}]' 
+```
+
+#### 3.2.2 配置 E4LB 策略
 
 ```bash
 kubectl apply -n demo -f - <<EOF
