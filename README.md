@@ -63,6 +63,8 @@ cd fsm-start-demo
 
 #### 2.7   慢启动预热策略测试 [Pod Level](scenarios.2.7.md) ✓
 
+#### 2.8   SmartDNS业务测试 [Node Level](scenarios.2.8.NL.md) ✓
+
 ## 3 融合业务场景测试
 
 ### 3.1 单集群微服务融合测试

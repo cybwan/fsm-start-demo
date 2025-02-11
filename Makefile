@@ -503,6 +503,21 @@ up-scenarios-2.6:
 down-scenarios-2.6:
 	export clusters="C1";make k3d-reset
 
+.PHONY: up-scenarios-2.8.NL
+up-scenarios-2.8.NL:
+	./scripts/scenarios.2.8.NL.sh
+
+.PHONY: down-scenarios-2.8.NL
+down-scenarios-2.8.NL:
+	clusters="C1" make k3d-reset
+	docker stop smartdns-eureka-httpbin-demo-1
+	docker stop smartdns-eureka-httpbin-demo-2
+	docker stop smartdns-eureka
+	docker stop smartdns-nacos-httpbin-demo-1
+	docker stop smartdns-nacos-httpbin-demo-2
+	docker stop smartdns-nacos
+	docker stop e4lb-client
+
 .PHONY: up-scenarios-2.9
 up-scenarios-2.9:
 	./scripts/scenarios.2.9.sh
