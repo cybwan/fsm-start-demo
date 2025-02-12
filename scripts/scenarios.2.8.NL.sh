@@ -16,9 +16,9 @@ docker run -d --network fsm --ip 172.22.0.230 --rm --name smartdns-eureka -p 876
 #等待 eureka 服务启动
 sleep 30s
 
-docker run -d --network fsm --ip 172.22.0.231 --rm --name smartdns-eureka-httpbin-demo-1 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
+docker run -d --hostname demo1.httpbin.eureka.smartdns.local --network fsm --ip 172.22.0.231 --rm --name smartdns-eureka-httpbin-demo-1 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
 
-docker run -d --network fsm --ip 172.22.0.232 --rm --name smartdns-eureka-httpbin-demo-2 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
+docker run -d --hostname demo2.httpbin.eureka.smartdns.local --network fsm --ip 172.22.0.232 --rm --name smartdns-eureka-httpbin-demo-2 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
 ###
 
 ## 3 部署 Nacos 集群
@@ -27,11 +27,11 @@ docker run -d --network fsm --ip 172.22.0.232 --rm --name smartdns-eureka-httpbi
 docker run -d --network fsm --ip 172.22.0.220 --rm -e MODE=standalone --name smartdns-nacos -p 8848:8848 -t nacos/nacos-server:v2.3.0
 
 #等待 nacos 服务启动
-sleep 30s
+sleep 20s
 
-docker run -d --network fsm --ip 172.22.0.221 --rm --name smartdns-nacos-httpbin-demo-1 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
+docker run -d --hostname demo1.httpbin.nacos.smartdns.local --network fsm --ip 172.22.0.221 --rm --name smartdns-nacos-httpbin-demo-1 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
 
-docker run -d --network fsm --ip 172.22.0.222 --rm --name smartdns-nacos-httpbin-demo-2 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
+docker run -d --hostname demo2.httpbin.nacos.smartdns.local --network fsm --ip 172.22.0.222 --rm --name smartdns-nacos-httpbin-demo-2 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
 ###
 
 ## 4 部署网格服务
@@ -66,13 +66,15 @@ spec:
           from: All
 EOF
 
-sleep 3
+sleep 15s
 
 kubectl patch daemonset fsm-gateway-fsm-system-dns-proxy -n fsm-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"k3d-c1-server-0"}}}}}'  --type=merge
 
+sleep 15s
+
 kubectl wait --all --for=condition=ready pod -n fsm-system -l app=fsm-gateway --timeout=180s
 
-until kubectl get service/fsm-gateway-fsm-system-dns-proxy-udp -n fsm-system --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+#until kubectl get service/fsm-gateway-fsm-system-dns-proxy-udp -n fsm-system --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
 export c1_fgw_cluster_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-dns-proxy-udp -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c1_fgw_cluster_ip $c1_fgw_cluster_ip
@@ -142,22 +144,52 @@ spec:
 EOF
 ###
 
-## 3 E4LB 业务测试
+## 8 E4LB 业务测试
 
-### 3.1 部署模拟业务服务
+### 8.1 demo/httpbin 配置 EIP
 
 ###bash
 WITH_MESH=false replicas=3 make deploy-hostname-httpbin
-###
 
-### 3.2 配置 EIP
-
-###bash
 kubectl apply -n demo -f - <<EOF
 kind: EIPAdvertisement
 apiVersion: xnetwork.flomesh.io/v1alpha1
 metadata:
-  name: demo
+  name: httpbin
+spec:
+  service:
+    name: httpbin
+  eip: 172.22.0.186
+  nodes:
+  - k3d-c1-server-0
+EOF
+###
+
+### 8.2 eureka/httpbin 配置 EIP
+
+###bash
+kubectl apply -n eureka -f - <<EOF
+kind: EIPAdvertisement
+apiVersion: xnetwork.flomesh.io/v1alpha1
+metadata:
+  name: httpbin
+spec:
+  service:
+    name: httpbin
+  eip: 172.22.0.187
+  nodes:
+  - k3d-c1-server-0
+EOF
+###
+
+### 8.3 nacos/httpbin 配置 EIP
+
+###bash
+kubectl apply -n nacos -f - <<EOF
+kind: EIPAdvertisement
+apiVersion: xnetwork.flomesh.io/v1alpha1
+metadata:
+  name: httpbin
 spec:
   service:
     name: httpbin
@@ -167,11 +199,9 @@ spec:
 EOF
 ###
 
-##注:##
+### 8.4 业务功能测试
 
-- ##如果没有设置 nodes,则遵循 3.2.1.1 的规则##
-
-### 3.3 部署模拟外部客户端
+#### 8.4.1 部署模拟外部客户端
 
 ###bash
 docker run -d --network fsm --rm --name e4lb-client -t cybwan/curl:latest sleep 1h
