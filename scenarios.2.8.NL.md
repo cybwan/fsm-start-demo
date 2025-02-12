@@ -271,10 +271,4 @@ docker stop smartdns-nacos-httpbin-demo-2
 docker stop smartdns-nacos
 
 docker stop e4lb-client
-
-ip a add dev eth0 172.22.0.188/32
-xnat nat add --sys=e4lb --proto-tcp --addr=172.22.0.188 --port=14001 --tc-ingress --ep-addr=172.22.0.221 --ep-port=14001 --ep-mac=02:42:ac:16:00:dd --ep-ofi=114 --ep-oflags=1 --ep-omac=02:42:ac:16:00:04
-
-
-xnat nat add --sys=e4lb --proto-tcp --addr=172.22.0.188 --port=14001 --tc-ingress --ep-addr=172.22.0.221 --ep-port=14001 --ep-mac=02:42:ac:16:00:04 --ep-ofi=114 --ep-oflags=1
 ```
