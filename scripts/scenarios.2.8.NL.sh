@@ -38,29 +38,37 @@ docker run -d --hostname demo2.httpbin.nacos.smartdns.local --network fsm --ip 1
 
 ###bash
 kubecm switch k3d-C1
+
+#export CTR_REGISTRY=192.168.226.1:5000/flomesh
+#export CTR_TAG=latest
+
 fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=true e4lb=true make deploy-fsm
 ###
 
-## 5 部署 fgw
+## 5 部署 FGW DNS Proxy
+
+### 5.1 部署 FGW
 
 ###bash
+kubectl patch meshconfig fsm-mesh-config -n fsm-system -p '{"spec":{"sidecar":{"xnetDNSProxy":{"enable":true,"upstreams":[{"name":"fsm-gateway-fsm-system-fgw-dns-proxy-udp","namespace":"fsm-system","port":10053}]}}}}'  --type=merge
+
 kubectl apply -n fsm-system -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: dns-proxy
+  name: fgw-dns-proxy
 spec:
   gatewayClassName: fsm
   listeners:
     - protocol: UDP
       port: 10053
-      name: internal-dns
+      name: egress-dns
       allowedRoutes:
         namespaces:
           from: All
     - protocol: UDP
       port: 53
-      name: external-dns
+      name: ingress-dns
       allowedRoutes:
         namespaces:
           from: All
@@ -68,22 +76,130 @@ EOF
 
 sleep 15s
 
-kubectl patch daemonset fsm-gateway-fsm-system-dns-proxy -n fsm-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"k3d-c1-server-0"}}}}}'  --type=merge
+kubectl patch daemonset fsm-gateway-fsm-system-fgw-dns-proxy -n fsm-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"k3d-c1-server-0"}}}}}'  --type=merge
+###
 
-sleep 15s
+### 5.2 配置 INGRESS 方向 DNS filter
 
-kubectl wait --all --for=condition=ready pod -n fsm-system -l app=fsm-gateway --timeout=180s
+###bash
+kubectl -n kube-system apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: UDPRoute
+metadata:
+  name: ingress-dns-route
+spec:
+  parentRefs:
+    - name: fgw-dns-proxy
+      namespace: fsm-system
+      port: 10053
+  rules:
+  - name: dns
+    backendRefs:
+    - name: kube-dns
+      port: 53
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: DNSModifier
+metadata:
+  name: ingress-dns-resolve-db
+spec:
+  domains:
+    - name: google.com
+      answer:
+        rdata: 11.11.11.11
+    - name: httpbin.demo.global
+      answer:
+        rdata: 172.22.0.186
+    - name: httpbin.eureka.global
+      answer:
+        rdata: 172.22.0.187
+    - name: httpbin.nacos.global
+      answer:
+        rdata: 172.22.0.188
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: Filter
+metadata:
+  name: ingress-dns-filter
+spec:
+  type: DNSModifier
+  configRef:
+    group: extension.gateway.flomesh.io
+    kind: DNSModifier
+    name: ingress-dns-resolve-db
+---
+apiVersion: gateway.flomesh.io/v1alpha2
+kind: RouteRuleFilterPolicy
+metadata:
+  name: ingress-dns-filter-policy
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: UDPRoute
+      name: ingress-dns-route
+      rule: dns
+  filterRefs:
+    - group: extension.gateway.flomesh.io
+      kind: Filter
+      name: ingress-dns-filter
+EOF
+###
 
-#until kubectl get service/fsm-gateway-fsm-system-dns-proxy-udp -n fsm-system --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+### 5.3 配置 EGRESS 方向 DNS filter
 
-export c1_fgw_cluster_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-dns-proxy-udp -o jsonpath='{.items[0].spec.clusterIP}')"
-echo c1_fgw_cluster_ip $c1_fgw_cluster_ip
-
-export c1_fgw_external_ip="$(kubectl get svc -n fsm-system --field-selector metadata.name=fsm-gateway-fsm-system-dns-proxy-udp -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')"
-echo c1_fgw_external_ip $c1_fgw_external_ip
-
-export c1_fgw_pod_ip="$(kubectl get pod -n fsm-system --selector app=fsm-gateway -o jsonpath='{.items[0].status.podIP}')"
-echo c1_fgw_pod_ip $c1_fgw_pod_ip
+###bash
+kubectl -n kube-system apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: UDPRoute
+metadata:
+  name: egress-dns-route
+spec:
+  parentRefs:
+    - name: fgw-dns-proxy
+      namespace: fsm-system
+      port: 53
+  rules:
+  - name: dns
+    backendRefs:
+    - name: kube-dns
+      port: 53
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: DNSModifier
+metadata:
+  name: egress-dns-resolve-db
+spec:
+  domains:
+    - name: google.com
+      answer:
+        rdata: 22.22.22.22
+---
+apiVersion: extension.gateway.flomesh.io/v1alpha1
+kind: Filter
+metadata:
+  name: egress-dns-filter
+spec:
+  type: DNSModifier
+  configRef:
+    group: extension.gateway.flomesh.io
+    kind: DNSModifier
+    name: egress-dns-resolve-db
+---
+apiVersion: gateway.flomesh.io/v1alpha2
+kind: RouteRuleFilterPolicy
+metadata:
+  name: egress-dns-filter-policy
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: UDPRoute
+      name: egress-dns-route
+      rule: dns
+  filterRefs:
+    - group: extension.gateway.flomesh.io
+      kind: Filter
+      name: egress-dns-filter
+EOF
 ###
 
 ## 6 导入 Eureka 服务
@@ -204,5 +320,5 @@ EOF
 #### 8.4.1 部署模拟外部客户端
 
 ###bash
-docker run -d --network fsm --rm --name e4lb-client -t cybwan/curl:latest sleep 1h
+docker run -d --privileged --network fsm --rm --name e4lb-client -t cybwan/curl:latest sleep 1h
 ###
