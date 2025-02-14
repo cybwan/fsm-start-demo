@@ -18,10 +18,9 @@ spec:
         app: curl
     spec:
       serviceAccountName: curl
-      nodeSelector:
-        kubernetes.io/os: linux
+      nodeName: worker2
       containers:
-      - image: cybwan/curl
+      - image: 192.168.226.1:5000/cybwan/curl
         imagePullPolicy: IfNotPresent
         name: curl
         command: ["sleep", "365d"]

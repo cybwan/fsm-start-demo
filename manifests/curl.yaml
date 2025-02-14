@@ -16,6 +16,6 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: curl
-        image: cybwan/ubuntu:22.04
+        image: 192.168.226.1:5000/cybwan/ubuntu:22.04
         imagePullPolicy: IfNotPresent
         command: [ "sleep", "365d" ]

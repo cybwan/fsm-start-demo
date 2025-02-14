@@ -36,7 +36,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       containers:
-      - image: flomesh/pipy-nightly:latest
+      - image: 192.168.226.1:5000/flomesh/pipy-nightly:latest
         imagePullPolicy: IfNotPresent
         name: httpbin
         command:

@@ -3,7 +3,7 @@
 ## 1 部署 K8S 集群
 
 ```bash
-clusters="C1" agents=2 make k3d-up
+#clusters="C1" agents=2 make k3d-up
 ```
 
 ## 2 部署 Eureka 集群
@@ -35,12 +35,11 @@ docker run -d --hostname demo2.httpbin.nacos.smartdns.local --network fsm --ip 1
 ## 4 部署网格服务
 
 ```bash
-kubecm switch k3d-C1
+export CTR_REGISTRY=192.168.226.1:5000/flomesh
+export PIPY_REGISTRY=192.168.226.1:5000/flomesh
+export CTR_TAG=latest
 
-#export CTR_REGISTRY=192.168.226.1:5000/flomesh
-#export CTR_TAG=latest
-
-fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=true e4lb=true make deploy-fsm
+fsm_cluster_name=C1 sidecar=NodeLevel k8s=true mesh=true e4lb=true make deploy-fsm
 ```
 
 ## 5 部署 FGW DNS Proxy
@@ -74,7 +73,7 @@ EOF
 
 sleep 15s
 
-kubectl patch daemonset fsm-gateway-fsm-system-fgw-dns-proxy -n fsm-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"k3d-c1-server-0"}}}}}'  --type=merge
+kubectl patch daemonset fsm-gateway-fsm-system-fgw-dns-proxy -n fsm-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"worker1"}}}}}'  --type=merge
 ```
 
 ### 5.2 配置 INGRESS 方向 DNS filter
@@ -107,13 +106,7 @@ spec:
         rdata: 11.11.11.11
     - name: httpbin.demo.global
       answer:
-        rdata: 172.22.0.186
-    - name: httpbin.eureka.global
-      answer:
-        rdata: 172.22.0.187
-    - name: httpbin.nacos.global
-      answer:
-        rdata: 172.22.0.188
+        rdata: 192.168.127.186
 ---
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: Filter
@@ -263,7 +256,7 @@ EOF
 ### 8.1 demo/httpbin 配置 EIP
 
 ```bash
-WITH_MESH=false replicas=3 make deploy-hostname-httpbin
+WITH_MESH=false replicas=2 make deploy-hostname-httpbin
 
 kubectl apply -n demo -f - <<EOF
 kind: EIPAdvertisement
@@ -273,9 +266,9 @@ metadata:
 spec:
   service: 
     name: httpbin
-  eip: 172.22.0.186
+  eip: 192.168.127.186
   nodes:
-  - k3d-c1-server-0
+  - worker2
 EOF
 ```
 
@@ -290,9 +283,9 @@ metadata:
 spec:
   service: 
     name: httpbin
-  eip: 172.22.0.187
+  eip: 192.168.127.187
   nodes:
-  - k3d-c1-server-0
+  - worker2
 EOF
 ```
 
@@ -307,9 +300,9 @@ metadata:
 spec:
   service: 
     name: httpbin
-  eip: 172.22.0.188
+  eip: 192.168.127.188
   nodes:
-  - k3d-c1-server-0
+  - worker2
 EOF
 ```
 
@@ -403,4 +396,18 @@ kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metada
 kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 172.22.0.187:14001
 
 kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 172.22.0.186:80
+
+
+
+args.Netns: /proc/19153/ns/net 
+volume.SysRun.HostPath: /var/run 
+volume.SysRun.MountPath: /host/run
+
+xnat bpf detach --sys=mesh --tc-egress=true --tc-ingress=true --run-netns-dir=/host/proc --namespace=15900/ns/net
+
+xnat bpf attach --sys=mesh --tc-egress=true --tc-ingress=true --run-netns-dir=/host/proc --namespace=15900/ns/net
+
+xnat netns ls --run-netns-dir=/host/proc
+
+clear;cat /sys/kernel/debug/tracing/trace_pipe|grep bpf_trace_printk
 ```

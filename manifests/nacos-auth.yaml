@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: nacos
-          image: nacos/nacos-server:v2.3.0-slim
+          image: 192.168.226.1:5000/nacos/nacos-server:v2.3.0-slim
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8848

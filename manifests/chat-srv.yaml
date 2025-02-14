@@ -16,7 +16,7 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: udp
-        image: cybwan/chat:0.1.1
+        image: 192.168.226.1:5000/cybwan/chat:0.1.1
         imagePullPolicy: IfNotPresent
         command:
           - /chat
@@ -24,7 +24,7 @@ spec:
           - server
           - --laddr=0.0.0.0:6666
       - name: tcp
-        image: cybwan/chat:0.1.1
+        image: 192.168.226.1:5000/cybwan/chat:0.1.1
         imagePullPolicy: IfNotPresent
         command:
           - /chat

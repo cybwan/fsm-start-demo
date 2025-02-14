@@ -72,7 +72,7 @@ spec:
     spec:
       containers:
         - name: curl
-          image: cybwan/springboot-eureka-demo:latest
+          image: 192.168.226.1:5000/cybwan/springboot-eureka-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001

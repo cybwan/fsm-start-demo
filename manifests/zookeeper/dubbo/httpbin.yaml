@@ -66,7 +66,7 @@ spec:
     spec:
       containers:
         - name: httpbin
-          image: cybwan/springboot-dubbo-demo:latest
+          image: 192.168.226.1:5000/cybwan/springboot-dubbo-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001

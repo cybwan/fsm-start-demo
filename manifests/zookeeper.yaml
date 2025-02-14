@@ -29,11 +29,11 @@ spec:
     spec:
       containers:
         - name: zookeeper
-          image: zookeeper:3.6.2
+          image: 192.168.226.1:5000/zookeeper:3.6.2
           ports:
             - containerPort: 2181
         - name: zookeeper-web
-          image: tobilg/zookeeper-webui:latest
+          image: 192.168.226.1:5000/tobilg/zookeeper-webui:latest
           ports:
             - containerPort: 8081
           env:

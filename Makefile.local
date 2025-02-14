@@ -42,11 +42,23 @@ switch-images-to-remote:
 	@cd manifests;find . -type f | xargs sed -i 's#image: localhost:5000/tobilg#image: tobilg#g'
 	@cd manifests;find . -type f | xargs sed -i 's#image: localhost:5000/cybwan#image: cybwan#g'
 
+.PHONY: switch-images-to-local226
+switch-images-to-local226:
+	@cd manifests;find . -type f | xargs sed -i 's#image: consul#image: 192.168.226.1:5000/consul#g'
+	@cd manifests;find . -type f | xargs sed -i 's#image: nacos#image: 192.168.226.1:5000/nacos#g'
+	@cd manifests;find . -type f | xargs sed -i 's#image: flomesh#image: 192.168.226.1:5000/flomesh#g'
+	@cd manifests;find . -type f | xargs sed -i 's#image: zookeeper#image: 192.168.226.1:5000/zookeeper#g'
+	@cd manifests;find . -type f | xargs sed -i 's#image: tobilg#image: 192.168.226.1:5000/tobilg#g'
+	@cd manifests;find . -type f | xargs sed -i 's#image: cybwan#image: 192.168.226.1:5000/cybwan#g'
+
 .PHONY: local
 local: switch-images-to-local
 
 .PHONY: remote
 remote: switch-images-to-remote
+
+.PHONY: local226
+local226: switch-images-to-local226
 
 .PHONY: md2sh
 md2sh:

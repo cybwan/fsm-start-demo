@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: outbound
-          image: flomesh/pipy-nightly:latest
+          image: 192.168.226.1:5000/flomesh/pipy-nightly:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http-outbound-1
@@ -30,7 +30,7 @@ spec:
               .listen(15001)
               .serveHTTP(new Message('hi, it works as fgw3 outbound listener.\n'))
         - name: inbound
-          image: flomesh/pipy-nightly:latest
+          image: 192.168.226.1:5000/flomesh/pipy-nightly:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http-inbound-1

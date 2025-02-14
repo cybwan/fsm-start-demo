@@ -98,12 +98,12 @@ shell-node-agent2:
 
 .PHONY: shell-xnet
 shell-xnet:
-	export XNETWORK_POD=$$(kubectl get pods --selector app=fsm-xnetwork -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	export XNETWORK_POD=$$(kubectl get pods --selector app=fsm-xnetwork --field-selector spec.nodeName=worker2 -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl exec -it "$$XNETWORK_POD" -n fsm-system -c fsm-xnet -- bash
 
 .PHONY: shell-xmgt
 shell-xmgt:
-	export XNETWORK_POD=$$(kubectl get pods --selector app=fsm-xnetwork -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	export XNETWORK_POD=$$(kubectl get pods --selector app=fsm-xnetwork --field-selector spec.nodeName=worker2 -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl exec -it "$$XNETWORK_POD" -n fsm-system -c fsm-xmgt -- bash
 
 .PHONY: restart-xnetwork

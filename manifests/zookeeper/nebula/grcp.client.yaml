@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
         - name: client
-          image: cybwan/grpc-client
+          image: 192.168.226.1:5000/cybwan/grpc-client
           imagePullPolicy: Always
           command: [ "java", "-jar", "grpc-client-1.0.0.jar" ]
           volumeMounts:
