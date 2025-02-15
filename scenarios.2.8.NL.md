@@ -2,34 +2,155 @@
 
 ## 1 部署 K8S 集群
 
-```bash
-#clusters="C1" agents=2 make k3d-up
+### 1.1 组件要求
+
+**k8s + metallb + calico vxlan**
+
+### 1.2 节点网络配置
+
+#### 1.2.1 master
+
+```yaml
+# This is the network config written by 'subiquity'
+network:
+  ethernets:
+    ens36:
+      dhcp4: false
+      addresses: [192.168.226.80/24,A192:A168:A226::80/64]
+    ens33:
+      dhcp4: false
+      mtu: 1436
+      addresses: [192.168.127.80/24,B192:B168:B127::80/64]
+      nameservers:
+        addresses: [8.8.8.8]
+      routes:
+      - to: default
+        via: 192.168.127.1
+      - to: 11.11.0.0/24
+        via: 192.168.127.51
+      - to: 22.22.0.0/24
+        via: 192.168.127.52
+  version: 2
+```
+
+#### 1.2.2 worker1
+
+```yaml
+# This is the network config written by 'subiquity'
+network:
+  ethernets:
+    ens36:
+      dhcp4: false
+      addresses: [192.168.226.81/24,A192:A168:A226::81/64]
+    ens33:
+      dhcp4: false
+      mtu: 1436
+      addresses: [192.168.127.81/24,B192:B168:B127::81/64]
+      nameservers:
+        addresses: [8.8.8.8]
+      routes:
+      - to: default
+        via: 192.168.127.1
+      - to: 11.11.0.0/24
+        via: 192.168.127.51
+      - to: 22.22.0.0/24
+        via: 192.168.127.52
+  version: 2
+```
+
+#### 1.2.3 worker2
+
+```yaml
+# This is the network config written by 'subiquity'
+network:
+  ethernets:
+    ens36:
+      dhcp4: false
+      addresses: [192.168.226.82/24,A192:A168:A226::82/64]
+    ens33:
+      dhcp4: false
+      mtu: 1436
+      addresses: [192.168.127.82/24,B192:B168:B127::82/64]
+      nameservers:
+        addresses: [8.8.8.8]
+      routes:
+      - to: default
+        via: 192.168.127.1
+      - to: 11.11.0.0/24
+        via: 192.168.127.51
+      - to: 22.22.0.0/24
+        via: 192.168.127.52
+  version: 2
 ```
 
 ## 2 部署 Eureka 集群
 
+### 2.1 Eureka节点网络配置
+
+```yaml
+# This is the network config written by 'subiquity'
+network:
+  ethernets:
+    ens36:
+      dhcp4: false
+      addresses: [192.168.226.51/24,A192:A168:A226::51/64]
+    ens33:
+      dhcp4: false
+      mtu: 1436
+      addresses: [192.168.127.51/24,B192:B168:B127::51/64]
+      nameservers:
+        addresses: [8.8.8.8]
+      routes:
+      - to: default
+        via: 192.168.127.1
+  version: 2
+```
+
+### 2.2 Eureka服务部署
+
 ```bash
-docker run -d --network fsm --ip 172.22.0.230 --rm --name smartdns-eureka -p 8761:8761 -t flomesh/samples-discovery-server:latest
+if ! docker network ls --format "{{ .Name}}" | grep -q eureka; then docker network create --driver=bridge --subnet=11.11.0.0/16 --gateway=11.11.0.1 eureka; fi
 
-#等待 eureka 服务启动
-sleep 30s
+docker run -d --restart always --network eureka --ip 11.11.0.110 --name smartdns-eureka -p 8761:8761 -t flomesh/samples-discovery-server:latest
 
-docker run -d --hostname demo1.httpbin.eureka.smartdns.local --network fsm --ip 172.22.0.231 --rm --name smartdns-eureka-httpbin-demo-1 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
+docker run -d --restart always --hostname demo1.httpbin.eureka.smartdns.local --network eureka --ip 11.11.0.111 -e EUREKA_SERVICE_URL=http://11.11.0.110:8761/eureka/ --name smartdns-eureka-httpbin-demo-1 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
 
-docker run -d --hostname demo2.httpbin.eureka.smartdns.local --network fsm --ip 172.22.0.232 --rm --name smartdns-eureka-httpbin-demo-2 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
+docker run -d --restart always --hostname demo2.httpbin.eureka.smartdns.local --network eureka --ip 11.11.0.112 -e EUREKA_SERVICE_URL=http://11.11.0.110:8761/eureka/ --name smartdns-eureka-httpbin-demo-2 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
 ```
 
 ## 3 部署 Nacos 集群
 
+### 2.1 Nacos节点网络配置
+
+```yaml
+# This is the network config written by 'subiquity'
+network:
+  ethernets:
+    ens36:
+      dhcp4: false
+      addresses: [192.168.226.52/24,A192:A168:A226::52/64]
+    ens33:
+      dhcp4: false
+      mtu: 1436
+      addresses: [192.168.127.52/24,B192:B168:B127::52/64]
+      nameservers:
+        addresses: [8.8.8.8]
+      routes:
+      - to: default
+        via: 192.168.127.1
+  version: 2
+```
+
+### 3.2 Nacos服务部署
+
 ```bash
-docker run -d --network fsm --ip 172.22.0.220 --rm -e MODE=standalone --name smartdns-nacos -p 8848:8848 -t nacos/nacos-server:v2.3.0
+if ! docker network ls --format "{{ .Name}}" | grep -q nacos; then docker network create --driver=bridge --subnet=22.22.0.0/16 --gateway=22.22.0.1 nacos; fi
 
-#等待 nacos 服务启动
-sleep 20s
+docker run -d --restart always --network nacos --ip 22.22.0.220 -e MODE=standalone --name smartdns-nacos -p 8848:8848 -p 9848:9848 -t nacos/nacos-server:v2.3.0
 
-docker run -d --hostname demo1.httpbin.nacos.smartdns.local --network fsm --ip 172.22.0.221 --rm --name smartdns-nacos-httpbin-demo-1 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
+docker run -d --restart always --hostname demo1.httpbin.nacos.smartdns.local --network nacos --ip 22.22.0.221 -e NACOS_SERVICE_URL=22.22.0.220:8848 --name smartdns-nacos-httpbin-demo-1 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
 
-docker run -d --hostname demo2.httpbin.nacos.smartdns.local --network fsm --ip 172.22.0.222 --rm --name smartdns-nacos-httpbin-demo-2 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
+docker run -d --restart always --hostname demo2.httpbin.nacos.smartdns.local --network nacos --ip 22.22.0.222 -e NACOS_SERVICE_URL=22.22.0.220:8848 --name smartdns-nacos-httpbin-demo-2 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
 ```
 
 ## 4 部署网格服务
@@ -308,36 +429,33 @@ EOF
 
 ### 8.4 业务功能测试
 
-#### 8.4.1 部署模拟外部客户端
+#### 8.4.1 K8S集群外经 EIP 访问 K8S 内微服务
 
-```bash
-docker run -d --dns 8.8.8.8 --privileged --network fsm --rm --name e4lb-client -t cybwan/curl:latest sleep 1h
-```
-
-#### 8.4.2 demo/httpbin 调用效果
+##### 8.4.1.1 demo/httpbin 调用效果
 
 多次执行:
 
 ```bash
-docker exec e4lb-client /usr/bin/curl -s 172.22.0.186:80
+curl -s 192.168.127.186:80
 ```
 
 返回结果如下:
 
 ```bash
-hi, I am httpbin from host: httpbin-66d5b5b879-5nfc5 at node: k3d-c1-server-0 by pipy!
-hi, I am httpbin from host: httpbin-66d5b5b879-jb6mj at node: k3d-c1-agent-1 by pipy!
-hi, I am httpbin from host: httpbin-66d5b5b879-jb6mj at node: k3d-c1-agent-1 by pipy!
+hi, I am httpbin from host: httpbin-84dc4dcffd-hqbzr at node: worker1 by pipy!
+hi, I am httpbin from host: httpbin-84dc4dcffd-dnsq4 at node: worker2 by pipy!
 ```
 
-调用效果是分别从三个服务实例返回.
+调用效果是分别从两个服务实例返回.
 
-#### 8.4.3 eureka/httpbin 调用效果
+#### 8.4.2 K8S集群外经 EIP 访问跨网段 Eureka 微服务
+
+##### 8.4.2.1 eureka/httpbin 调用效果
 
 多次执行:
 
 ```bash
-docker exec e4lb-client /usr/bin/curl -s 172.22.0.187:14001
+curl -s 192.168.127.187:14001
 ```
 
 返回结果如下:
@@ -347,12 +465,14 @@ demo1.httpbin.eureka.smartdns.local
 demo2.httpbin.eureka.smartdns.local
 ```
 
-#### 8.4.4 nacos/httpbin 调用效果
+#### 8.4.3 K8S集群外经 EIP 访问跨网段 Nacos 微服务
+
+##### 8.4.3.1 nacos/httpbin 调用效果
 
 多次执行:
 
 ```bash
-docker exec e4lb-client /usr/bin/curl -s 172.22.0.188:14001
+curl -s 192.168.127.188:14001
 ```
 
 返回结果如下:
@@ -362,54 +482,35 @@ demo1.httpbin.nacos.smartdns.local
 demo2.httpbin.nacos.smartdns.local
 ```
 
-## 9 卸载 K8S 集群
+#### 8.4.4 K8S集群内域名解析测试
+
+##### 8.4.4.1 部署被 FSM 管控的模拟业务
 
 ```bash
-clusters="C1" make k3d-reset
-
-docker stop smartdns-eureka-httpbin-demo-1
-docker stop smartdns-eureka-httpbin-demo-2
-docker stop smartdns-eureka
-
-docker stop smartdns-nacos-httpbin-demo-1
-docker stop smartdns-nacos-httpbin-demo-2
-docker stop smartdns-nacos
-
-docker stop e4lb-client
-
 kubectl create namespace curl
 fsm namespace add curl
 kubectl apply -n curl -f ./manifests/native/curl.yaml
+```
 
+##### 8.4.4.2  解析 google.com 域名
+
+执行:
+
+```bash
 kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- nslookup google.com
+```
 
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- nslookup httpbin.demo.svc.cluster.local
+返回结果如下:
 
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- nslookup httpbin.demo.global
+```bash
+Server:		10.96.0.10
+Address:	10.96.0.10:53
 
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- nslookup httpbin.eureka.global
+Non-authoritative answer:
+Name:	google.com
+Address: 11.11.11.11
 
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- nslookup httpbin.nacos.global
-
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 192.168.127.188:14001
-
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 192.168.127.187:14001
-
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 192.168.127.186:80
-
-
-
-args.Netns: /proc/19153/ns/net 
-volume.SysRun.HostPath: /var/run 
-volume.SysRun.MountPath: /host/run
-
-xnat bpf detach --sys=mesh --tc-egress=true --tc-ingress=true --run-netns-dir=/host/proc --namespace=15900/ns/net
-
-xnat bpf attach --sys=mesh --tc-egress=true --tc-ingress=true --run-netns-dir=/host/proc --namespace=15900/ns/net
-
-xnat netns ls --run-netns-dir=/host/proc
-
-clear;cat /sys/kernel/debug/tracing/trace_pipe|grep bpf_trace_printk
-
-kubectl patch cm/kube-proxy -n kube-system --type=merge --patch='{"data":{"calico_backend":"vxlan"}}'
+Non-authoritative answer:
+Name:	google.com
+Address: 11.11.11.11
 ```
