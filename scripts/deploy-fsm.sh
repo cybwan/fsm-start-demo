@@ -35,6 +35,8 @@ fsm install \
     --set=fsm.fsmXnetwork.xnet.nodePaths.k8s.enable="${k8s}" \
     --set=fsm.fsmXnetwork.xnet.features.mesh="${mesh}" \
     --set=fsm.fsmXnetwork.xnet.features.e4lb="${e4lb}" \
+    --set=fsm.fsmXnetwork.xnet.cnis.calicoVxlan.enable=true \
+    --set=fsm.fsmXnetwork.xnet.cnis.calicoVxlan.bridge4.enable=true \
     --set=fsm.sidecar.sidecarLogLevel=debug \
     --set=fsm.sidecar.compressConfig=false \
     --set=fsm.sidecar.image.registry="$PIPY_REGISTRY" \

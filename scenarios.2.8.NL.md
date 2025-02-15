@@ -212,7 +212,7 @@ apiVersion: connector.flomesh.io/v1alpha1
 metadata:
   name: to-c1-eureka
 spec:
-  httpAddr: http://172.22.0.230:8761/eureka
+  httpAddr: http://192.168.127.51:8761/eureka
   deriveNamespace: eureka
   asInternalServices: true
   syncToK8S:
@@ -241,7 +241,7 @@ apiVersion: connector.flomesh.io/v1alpha1
 metadata:
   name: to-c1-nacos
 spec:
-  httpAddr: 172.22.0.220:8848
+  httpAddr: 192.168.127.52:8848
   deriveNamespace: nacos
   asInternalServices: true
   syncToK8S:
@@ -391,11 +391,11 @@ kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metada
 
 kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- nslookup httpbin.nacos.global
 
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 172.22.0.188:14001
+kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 192.168.127.188:14001
 
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 172.22.0.187:14001
+kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 192.168.127.187:14001
 
-kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 172.22.0.186:80
+kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 192.168.127.186:80
 
 
 
@@ -410,4 +410,6 @@ xnat bpf attach --sys=mesh --tc-egress=true --tc-ingress=true --run-netns-dir=/h
 xnat netns ls --run-netns-dir=/host/proc
 
 clear;cat /sys/kernel/debug/tracing/trace_pipe|grep bpf_trace_printk
+
+kubectl patch cm/kube-proxy -n kube-system --type=merge --patch='{"data":{"calico_backend":"vxlan"}}'
 ```
