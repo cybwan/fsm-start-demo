@@ -1,55 +1,53 @@
-#!/bin/bash
-
-# 场景 SmartDNS 业务测试
+# 场景 SmartDNS & Flannel 业务测试
 
 ## 1 部署 K8S 集群
 
-###bash
+```bash
 clusters="C1" agents=2 make k3d-up
-###
+```
 
 ## 2 部署 Eureka 集群
 
-###bash
+```bash
 docker run -d --network fsm --ip 172.22.0.230 --rm --name smartdns-eureka -p 8761:8761 -t flomesh/samples-discovery-server:latest
 
 #等待 eureka 服务启动
 sleep 30s
 
-docker run -d --hostname demo1.httpbin.eureka.smartdns.local --network fsm --ip 172.22.0.231 --rm --name smartdns-eureka-httpbin-demo-1 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
+docker run -d --hostname demo1.httpbin.eureka.smartdns.local --network fsm --ip 172.22.0.231 -e EUREKA_SERVICE_URL=http://172.22.0.230:8761/eureka/ --rm --name smartdns-eureka-httpbin-demo-1 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
 
-docker run -d --hostname demo2.httpbin.eureka.smartdns.local --network fsm --ip 172.22.0.232 --rm --name smartdns-eureka-httpbin-demo-2 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
-###
+docker run -d --hostname demo2.httpbin.eureka.smartdns.local --network fsm --ip 172.22.0.232 -e EUREKA_SERVICE_URL=http://172.22.0.230:8761/eureka/ --rm --name smartdns-eureka-httpbin-demo-2 -t cybwan/smartdns-eureka-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-eureka.jar
+```
 
 ## 3 部署 Nacos 集群
 
-###bash
+```bash
 docker run -d --network fsm --ip 172.22.0.220 --rm -e MODE=standalone --name smartdns-nacos -p 8848:8848 -t nacos/nacos-server:v2.3.0
 
 #等待 nacos 服务启动
 sleep 20s
 
-docker run -d --hostname demo1.httpbin.nacos.smartdns.local --network fsm --ip 172.22.0.221 --rm --name smartdns-nacos-httpbin-demo-1 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
+docker run -d --hostname demo1.httpbin.nacos.smartdns.local --network fsm --ip 172.22.0.221 -e NACOS_SERVICE_URL=172.22.0.220:8848 --rm --name smartdns-nacos-httpbin-demo-1 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
 
-docker run -d --hostname demo2.httpbin.nacos.smartdns.local --network fsm --ip 172.22.0.222 --rm --name smartdns-nacos-httpbin-demo-2 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
-###
+docker run -d --hostname demo2.httpbin.nacos.smartdns.local --network fsm --ip 172.22.0.222 -e NACOS_SERVICE_URL=172.22.0.220:8848 --rm --name smartdns-nacos-httpbin-demo-2 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
+```
 
-## 4 部署网格服务
+## 4 部署SmartDNS服务
 
-###bash
+```bash
 kubecm switch k3d-C1
 
 #export CTR_REGISTRY=192.168.226.1:5000/flomesh
 #export CTR_TAG=latest
 
-fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=true e4lb=true make deploy-fsm
-###
+fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=true e4lb=true make deploy-smartdns
+```
 
 ## 5 部署 FGW DNS Proxy
 
 ### 5.1 部署 FGW
 
-###bash
+```bash
 kubectl patch meshconfig fsm-mesh-config -n fsm-system -p '{"spec":{"sidecar":{"xnetDNSProxy":{"enable":true,"upstreams":[{"name":"fsm-gateway-fsm-system-fgw-dns-proxy-udp","namespace":"fsm-system","port":10053}]}}}}'  --type=merge
 
 kubectl apply -n fsm-system -f - <<EOF
@@ -77,11 +75,11 @@ EOF
 sleep 15s
 
 kubectl patch daemonset fsm-gateway-fsm-system-fgw-dns-proxy -n fsm-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"k3d-c1-server-0"}}}}}'  --type=merge
-###
+```
 
 ### 5.2 配置 INGRESS 方向 DNS filter
 
-###bash
+```bash
 kubectl -n kube-system apply -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: UDPRoute
@@ -143,11 +141,11 @@ spec:
       kind: Filter
       name: ingress-dns-filter
 EOF
-###
+```
 
 ### 5.3 配置 EGRESS 方向 DNS filter
 
-###bash
+```bash
 kubectl -n kube-system apply -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: UDPRoute
@@ -200,21 +198,21 @@ spec:
       kind: Filter
       name: egress-dns-filter
 EOF
-###
+```
 
 ## 6 导入 Eureka 服务
 
 ### 6.1 创建 derive-eureka namespace
 
-###bash
+```bash
 kubectl create namespace eureka
 fsm namespace add eureka
 kubectl patch namespace eureka -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"eureka"}}}'  --type=merge
-###
+```
 
 ### 6.2 部署 eureka connector
 
-###
+```
 kubectl apply  -f - <<EOF
 kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -229,21 +227,21 @@ spec:
   syncFromK8S:
     enable: false
 EOF
-###
+```
 
 ## 7 导入 Nacos 服务
 
 ### 7.1 创建 derive-nacos namespace
 
-###bash
+```bash
 kubectl create namespace nacos
 fsm namespace add nacos
 kubectl patch namespace nacos -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
-###
+```
 
 ### 7.2 部署 nacos connector
 
-###
+```
 kubectl apply  -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -258,13 +256,13 @@ spec:
   syncFromK8S:
     enable: false
 EOF
-###
+```
 
 ## 8 E4LB 业务测试
 
 ### 8.1 demo/httpbin 配置 EIP
 
-###bash
+```bash
 WITH_MESH=false replicas=3 make deploy-hostname-httpbin
 
 kubectl apply -n demo -f - <<EOF
@@ -273,52 +271,149 @@ apiVersion: xnetwork.flomesh.io/v1alpha1
 metadata:
   name: httpbin
 spec:
-  service:
+  service: 
     name: httpbin
   eip: 172.22.0.186
   nodes:
   - k3d-c1-server-0
 EOF
-###
+```
 
 ### 8.2 eureka/httpbin 配置 EIP
 
-###bash
+```bash
 kubectl apply -n eureka -f - <<EOF
 kind: EIPAdvertisement
 apiVersion: xnetwork.flomesh.io/v1alpha1
 metadata:
   name: httpbin
 spec:
-  service:
+  service: 
     name: httpbin
   eip: 172.22.0.187
   nodes:
   - k3d-c1-server-0
 EOF
-###
+```
 
 ### 8.3 nacos/httpbin 配置 EIP
 
-###bash
+```bash
 kubectl apply -n nacos -f - <<EOF
 kind: EIPAdvertisement
 apiVersion: xnetwork.flomesh.io/v1alpha1
 metadata:
   name: httpbin
 spec:
-  service:
+  service: 
     name: httpbin
   eip: 172.22.0.188
   nodes:
   - k3d-c1-server-0
 EOF
-###
+```
 
 ### 8.4 业务功能测试
 
 #### 8.4.1 部署模拟外部客户端
 
-###bash
-docker run -d --privileged --network fsm --rm --name e4lb-client -t cybwan/curl:latest sleep 1h
-###
+```bash
+docker run -d --dns 8.8.8.8 --privileged --network fsm --rm --name e4lb-client -t cybwan/curl:latest sleep 1h
+```
+
+#### 8.4.2 K8S集群外经 EIP 访问 K8S 内微服务
+
+多次执行:
+
+```bash
+docker exec e4lb-client /usr/bin/curl -s 172.22.0.186:80
+```
+
+返回结果如下:
+
+```bash
+hi, I am httpbin from host: httpbin-66d5b5b879-5nfc5 at node: k3d-c1-server-0 by pipy!
+hi, I am httpbin from host: httpbin-66d5b5b879-jb6mj at node: k3d-c1-agent-1 by pipy!
+hi, I am httpbin from host: httpbin-66d5b5b879-jb6mj at node: k3d-c1-agent-1 by pipy!
+```
+
+调用效果是分别从三个服务实例返回.
+
+#### 8.4.3 K8S集群外经 EIP 访问 Eureka 微服务
+
+多次执行:
+
+```bash
+docker exec e4lb-client /usr/bin/curl -s 172.22.0.187:14001
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.eureka.smartdns.local
+demo2.httpbin.eureka.smartdns.local
+```
+
+#### 8.4.4 K8S集群外经 EIP 访问 Nacos 微服务
+
+多次执行:
+
+```bash
+docker exec e4lb-client /usr/bin/curl -s 172.22.0.188:14001
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.nacos.smartdns.local
+demo2.httpbin.nacos.smartdns.local
+```
+
+#### 8.4.5 K8S集群内域名解析测试
+
+##### 8.4.5.1 部署被 FSM 管控的模拟业务
+
+```bash
+kubectl create namespace curl
+fsm namespace add curl
+kubectl apply -n curl -f ./manifests/native/curl.yaml
+```
+
+##### 8.4.5.2 解析 google.com 域名
+
+执行:
+
+```bash
+kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- nslookup google.com
+```
+
+返回结果如下:
+
+```bash
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+Non-authoritative answer:
+Name:	google.com
+Address: 11.11.11.11
+
+Non-authoritative answer:
+Name:	google.com
+Address: 11.11.11.11
+```
+
+## 9 卸载 K8S 集群
+
+```bash
+clusters="C1" make k3d-reset
+
+docker stop smartdns-eureka-httpbin-demo-1
+docker stop smartdns-eureka-httpbin-demo-2
+docker stop smartdns-eureka
+
+docker stop smartdns-nacos-httpbin-demo-1
+docker stop smartdns-nacos-httpbin-demo-2
+docker stop smartdns-nacos
+
+docker stop e4lb-client
+```

@@ -63,7 +63,7 @@ cd fsm-start-demo
 
 #### 2.7   慢启动预热策略测试 [Pod Level](scenarios.2.7.md) ✓
 
-#### 2.8   SmartDNS业务测试 [Node Level](scenarios.2.8.NL.md) ✓
+#### 2.8   SmartDNS业务测试 [Node Level Flannel](scenarios.2.8.1.NL.md) ✓ [Node Level Calico vxlan](scenarios.2.8.2.NL.md) ✓
 
 ## 3 融合业务场景测试
 

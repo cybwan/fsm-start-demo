@@ -38,20 +38,13 @@ fsm install \
     --set=fsm.fsmXnetwork.xnet.features.e4lb="${e4lb}" \
     --set=fsm.fsmXnetwork.xnet.cnis.${e4lb_cni}.enable=true \
     --set=fsm.fsmXnetwork.xnet.cnis.${e4lb_cni}.bridge4.enable=true \
-    --set=fsm.sidecar.sidecarLogLevel=debug \
-    --set=fsm.sidecar.compressConfig=false \
-    --set=fsm.sidecar.image.registry="$PIPY_REGISTRY" \
     --set=fsm.repoServer.image.registry="$PIPY_REGISTRY" \
     --set=fsm.controllerLogLevel=warn \
     --set=clusterSet.region=LN \
     --set=clusterSet.zone=DL \
     --set=clusterSet.group=FLOMESH \
     --set=clusterSet.name="$fsm_cluster_name" \
-    --set=fsm.localDNSProxy.enable=true \
-    --set=fsm.localDNSProxy.wildcard.enable=true \
-    --set=fsm.localDNSProxy.wildcard.ips[0].ipv4="1.1.1.1" \
-    --set=fsm.localDNSProxy.wildcard.los[0].ipv4="127.0.0.1" \
-    --set=fsm.localDNSProxy.primaryUpstreamDNSServerIPAddr=$dns_svc_ip \
+    --set=fsm.localDNSProxy.enable=false \
     --set fsm.fsmIngress.enabled=false \
     --set fsm.fsmGateway.enabled=true \
     --set fsm.fsmGateway.logLevel=debug \
@@ -59,7 +52,6 @@ fsm install \
     --set fsm.featureFlags.enableValidateGRPCRouteHostnames=false \
     --set fsm.featureFlags.enableValidateTLSRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGatewayListenerHostname=false \
-    --set=fsm.featureFlags.enableSidecarPrettyConfig=true \
     --set=fsm.fsmBootstrap.resource.requests.cpu=0.1 \
     --set=fsm.fsmBootstrap.resource.requests.memory=128M \
     --set=fsm.injector.resource.requests.cpu=0.1 \

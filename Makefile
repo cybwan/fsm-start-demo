@@ -18,6 +18,7 @@ sidecar ?= NodeLevel
 k8s ?= false
 mesh ?= true
 e4lb ?= false
+e4lb_cni ?= flannel
 replicas ?= 1
 
 CONSUL_VERSION ?= 1.15.4
@@ -38,7 +39,12 @@ k3d-reset:
 
 .PHONY: deploy-fsm
 deploy-fsm:
-	fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) scripts/deploy-fsm.sh
+	fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) e4lb_cni=$(e4lb_cni) scripts/deploy-fsm.sh
+
+.PHONY: deploy-smartdns
+deploy-smartdns:
+	fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) e4lb_cni=$(e4lb_cni) scripts/deploy-smartdns.sh
+
 
 tail-fsm-controller-logs:
 	cd ${FSM_HOME};./demo/tail-fsm-controller-logs.sh
@@ -503,12 +509,12 @@ up-scenarios-2.6:
 down-scenarios-2.6:
 	export clusters="C1";make k3d-reset
 
-.PHONY: up-scenarios-2.8.NL
-up-scenarios-2.8.NL:
-	./scripts/scenarios.2.8.NL.sh
+.PHONY: up-scenarios-2.8.1.NL
+up-scenarios-2.8.1.NL:
+	./scripts/scenarios.2.8.1.NL.sh
 
-.PHONY: down-scenarios-2.8.NL
-down-scenarios-2.8.NL:
+.PHONY: down-scenarios-2.8.1.NL
+down-scenarios-2.8.1.NL:
 	clusters="C1" make k3d-reset
 	docker stop smartdns-eureka-httpbin-demo-1
 	docker stop smartdns-eureka-httpbin-demo-2
