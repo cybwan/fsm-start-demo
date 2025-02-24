@@ -25,12 +25,12 @@ CONSUL_VERSION ?= 1.15.4
 
 .PHONY: k3d-up
 k3d-up:
-	K3D_HOST_IP=$(K3D_HOST_IP) clusters=${clusters} servers=$(servers) agents=$(agents) scripts/k3d-with-registry-multicluster$(WITH_PROXY).sh
+	scripts/k3d-with-registry-multicluster$(WITH_PROXY).sh
 	kubecm list
 
 .PHONY: k3d-proxy-up
 k3d-proxy-up:
-	K3D_HOST_IP=$(K3D_HOST_IP) clusters=${clusters} servers=$(servers) agents=$(agents) scripts/k3d-with-registry-multicluster-with-proxy.sh
+	scripts/k3d-with-registry-multicluster-with-proxy.sh
 	kubecm list
 
 .PHONY: k3d-reset
@@ -39,11 +39,11 @@ k3d-reset:
 
 .PHONY: deploy-fsm
 deploy-fsm:
-	fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) e4lb_cni=$(e4lb_cni) scripts/deploy-fsm.sh
+	@fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) e4lb_cni=$(e4lb_cni) scripts/deploy-fsm.sh
 
 .PHONY: deploy-smartdns
 deploy-smartdns:
-	fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) e4lb_cni=$(e4lb_cni) scripts/deploy-smartdns.sh
+	@fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) e4lb_cni=$(e4lb_cni) scripts/deploy-smartdns.sh
 
 
 tail-fsm-controller-logs:
@@ -627,6 +627,14 @@ up-scenarios-3.2.4.NL:
 .PHONY: down-scenarios-3.2.4
 down-scenarios-3.2.4:
 	export clusters="C1 C2 C3";make k3d-reset
+
+.PHONY: up-scenarios-3.2.5.PL
+up-scenarios-3.2.5.PL:
+	./scripts/scenarios.3.2.5.PL.sh
+
+.PHONY: down-scenarios-3.2.5
+down-scenarios-3.2.5:
+	export clusters="C0 C1 C2 C3";make k3d-reset
 
 .PHONY: up-scenarios-3.3.1.PL
 up-scenarios-3.3.1.PL:

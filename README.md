@@ -29,14 +29,14 @@ fi
 ### 1.3 下载并安装 fsm 命令行工具
 
 ```bash
-https://github.com/cybwan/fsm/releases/tag/v1.5.0-alpha.15
+https://github.com/cybwan/fsm/releases/tag/v1.5.0-alpha.11
 ```
 
 ### 1.4 设置环境变量
 
 ```bash
 export CTR_REGISTRY=cybwan
-export CTR_TAG=1.5.0-alpha.15
+export CTR_TAG=1.5.0-alpha.11
 export K3D_HOST_IP=192.168.127.91 #调整为你的本地IP
 ```
 
@@ -86,6 +86,8 @@ cd fsm-start-demo
 #### 3.2.3 Nacos HTTP 多集群微服务融合测试 [Pod Level](scenarios.3.2.3.PL.md) ✓ | [Node Level](scenarios.3.2.3.NL.md) ✓
 
 #### 3.2.4 Nebula gRPC 多集群微服务融合测试 [Pod Level](scenarios.3.2.4.PL.md) ✓ | [Node Level](scenarios.3.2.4.NL.md) ✓
+
+#### 3.2.5 Global Zookeeper 多集群微服务融合测试 [Pod Level](scenarios.3.2.5.PL.md) ✓ 
 
 ### 3.3 混合架构微服务融合测试
 
