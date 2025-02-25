@@ -499,7 +499,7 @@ EOF
 export c3_curl_pod_name="$(kubectl get pod -n demo --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
 echo c3_curl_pod_name $c3_curl_pod_name
 
-kubectl exec -n demo $c3_curl_pod_name -c curl -- curl -s httpbin:80 -I
+kubectl exec -n demo $c3_curl_pod_name -c curl -- curl -s httpbin:80
 ```
 
 确认运行效果,返回:
