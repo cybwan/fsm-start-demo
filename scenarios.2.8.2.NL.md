@@ -93,11 +93,11 @@ network:
   ethernets:
     ens36:
       dhcp4: false
-      addresses: [192.168.226.51/24,A192:A168:A226::51/64]
+      addresses: [192.168.226.53/24,A192:A168:A226::53/64]
     ens33:
       dhcp4: false
       mtu: 1436
-      addresses: [192.168.127.51/24,B192:B168:B127::51/64]
+      addresses: [192.168.127.53/24,B192:B168:B127::53/64]
       nameservers:
         addresses: [8.8.8.8]
       routes:
@@ -128,11 +128,11 @@ network:
   ethernets:
     ens36:
       dhcp4: false
-      addresses: [192.168.226.52/24,A192:A168:A226::52/64]
+      addresses: [192.168.226.54/24,A192:A168:A226::54/64]
     ens33:
       dhcp4: false
       mtu: 1436
-      addresses: [192.168.127.52/24,B192:B168:B127::52/64]
+      addresses: [192.168.127.54/24,B192:B168:B127::54/64]
       nameservers:
         addresses: [8.8.8.8]
       routes:
@@ -159,6 +159,9 @@ docker run -d --restart always --hostname demo2.httpbin.nacos.smartdns.local --n
 export CTR_REGISTRY=cybwan
 export PIPY_REGISTRY=flomesh
 export CTR_TAG=1.5.0-alpha.15
+#export CTR_REGISTRY=172.168.226.1:5000/flomesh
+#export PIPY_REGISTRY=flomesh
+#export CTR_TAG=latest
 
 fsm_cluster_name=C1 sidecar=NodeLevel k8s=true mesh=true e4lb=true e4lb_cni=calicoVxlan make deploy-smartdns
 ```
@@ -333,7 +336,7 @@ apiVersion: connector.flomesh.io/v1alpha1
 metadata:
   name: to-c1-eureka
 spec:
-  httpAddr: http://192.168.127.51:8761/eureka
+  httpAddr: http://192.168.127.53:8761/eureka
   deriveNamespace: eureka
   asInternalServices: true
   syncToK8S:
@@ -362,7 +365,7 @@ apiVersion: connector.flomesh.io/v1alpha1
 metadata:
   name: to-c1-nacos
 spec:
-  httpAddr: 192.168.127.52:8848
+  httpAddr: 192.168.127.54:8848
   deriveNamespace: nacos
   asInternalServices: true
   syncToK8S:
