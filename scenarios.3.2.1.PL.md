@@ -199,7 +199,7 @@ echo c1_fgw_pod_ip $c1_fgw_pod_ip
 #### 3.1.2 部署 fgw connector
 
 ```bash
-kubectl apply  -f - <<EOF
+kubectl apply -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -230,7 +230,7 @@ kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io
 #### 3.1.4 部署 consul connector(c1-consul-to-c1-derive-local)
 
 ```
-kubectl apply  -f - <<EOF
+kubectl apply -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -254,7 +254,7 @@ EOF
 **c1 k8s微服务同步到c2 consul**
 
 ```
-kubectl apply  -f - <<EOF
+kubectl apply -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -324,7 +324,7 @@ echo c2_fgw_pod_ip $c2_fgw_pod_ip
 #### 3.2.2 部署 fgw connector
 
 ```bash
-kubectl apply  -f - <<EOF
+kubectl apply -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -355,7 +355,7 @@ kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io
 #### 3.2.4 部署 consul connector(c2-consul-to-c2-derive-local)
 
 ```
-kubectl apply  -f - <<EOF
+kubectl apply -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -379,7 +379,7 @@ EOF
 **c2 k8s微服务同步到c3 consul**
 
 ```
-kubectl apply  -f - <<EOF
+kubectl apply -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:

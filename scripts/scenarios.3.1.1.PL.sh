@@ -97,7 +97,7 @@ spec:
   syncToK8S:
     enable: true
     filterIpRanges:
-      - 10.101.1.0/24
+      - 10.101.0.0/16
     generateInternalServiceHealthCheck: true
     withGateway:
       enable: false

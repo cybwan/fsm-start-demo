@@ -477,7 +477,7 @@ spec:
     withGateway: 
       enable: true
     filterIpRanges:
-      - 10.103.1.0/24
+      - 10.103.0.0/16
   syncFromK8S:
     enable: false
 EOF

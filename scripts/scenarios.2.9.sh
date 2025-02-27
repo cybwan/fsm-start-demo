@@ -363,7 +363,7 @@ spec:
   syncToK8S:
     enable: true
     filterIpRanges:
-      - 10.101.1.0/24
+      - 10.101.0.0/16
     withGateway:
       enable: true
   syncFromK8S:
@@ -480,7 +480,7 @@ spec:
   syncToK8S:
     enable: true
     filterIpRanges:
-      - 10.102.1.0/24
+      - 10.102.0.0/16
     withGateway:
       enable: true
   syncFromK8S:
@@ -597,7 +597,7 @@ spec:
   syncToK8S:
     enable: true
     filterIpRanges:
-      - 10.103.1.0/24
+      - 10.103.0.0/16
     withGateway:
       enable: true
     fixedHttpServicePort: 80
