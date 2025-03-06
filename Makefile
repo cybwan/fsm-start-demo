@@ -523,6 +523,10 @@ down-scenarios-2.8.1.NL:
 	docker stop smartdns-nacos
 	docker stop e4lb-client
 
+.PHONY: up-scenarios-2.8.2.BCLinux.NL
+up-scenarios-2.8.2.BCLinux.NL:
+	./scripts/scenarios.2.8.2.bclinux.NL.sh
+
 .PHONY: up-scenarios-2.9
 up-scenarios-2.9:
 	./scripts/scenarios.2.9.sh

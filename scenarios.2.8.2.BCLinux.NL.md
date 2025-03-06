@@ -160,9 +160,11 @@ export CTR_REGISTRY=172.168.226.1:5000/flomesh
 export PIPY_REGISTRY=172.168.226.1:5000/flomesh
 export CTR_XNET_REGISTRY=172.168.226.1:5000/flomesh
 export CTR_TAG=latest
-export CTR_XNET_TAG=latest
+export CTR_XNET_TAG=bclinux-euler-22.10-latest
 
 fsm_cluster_name=C1 sidecar=NodeLevel k8s=true mesh=true e4lb=true e4lb_cni=calicoVxlan make deploy-smartdns
+
+kubectl scale deployment -n fsm-system fsm-injector --replicas=0
 ```
 
 ## 5 部署 FGW DNS Proxy
