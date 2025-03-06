@@ -8,7 +8,7 @@
 
 ### 1.2 节点网络配置
 
-#### 1.2.1 master
+#### 1.2.1 master.bc
 
 ```yaml
 # This is the network config written by 'subiquity'
@@ -33,7 +33,7 @@ network:
   version: 2
 ```
 
-#### 1.2.2 worker1
+#### 1.2.2 worker1.bc
 
 ```yaml
 # This is the network config written by 'subiquity'
@@ -58,7 +58,7 @@ network:
   version: 2
 ```
 
-#### 1.2.3 worker2
+#### 1.2.3 worker2.bc
 
 ```yaml
 # This is the network config written by 'subiquity'
@@ -158,7 +158,9 @@ docker run -d --restart always --hostname demo2.httpbin.nacos.smartdns.local --n
 ```bash
 export CTR_REGISTRY=172.168.226.1:5000/flomesh
 export PIPY_REGISTRY=172.168.226.1:5000/flomesh
+export CTR_XNET_REGISTRY=172.168.226.1:5000/flomesh
 export CTR_TAG=latest
+export CTR_XNET_TAG=latest
 
 fsm_cluster_name=C1 sidecar=NodeLevel k8s=true mesh=true e4lb=true e4lb_cni=calicoVxlan make deploy-smartdns
 ```
@@ -194,7 +196,7 @@ EOF
 
 sleep 15s
 
-kubectl patch daemonset fsm-gateway-fsm-system-fgw-dns-proxy -n fsm-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"worker1"}}}}}'  --type=merge
+kubectl patch daemonset fsm-gateway-fsm-system-fgw-dns-proxy -n fsm-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"worker1.bc"}}}}}'  --type=merge
 ```
 
 ### 5.2 配置 INGRESS 方向 DNS filter
@@ -389,7 +391,7 @@ spec:
     name: httpbin
   eip: 192.168.127.186
   nodes:
-  - worker2
+  - worker2.bc
 EOF
 ```
 
@@ -406,7 +408,7 @@ spec:
     name: httpbin
   eip: 192.168.127.187
   nodes:
-  - worker2
+  - worker2.bc
 EOF
 ```
 
@@ -423,15 +425,17 @@ spec:
     name: httpbin
   eip: 192.168.127.188
   nodes:
-  - worker2
+  - worker2.bc
 EOF
 ```
 
 ### 8.4 业务功能测试
 
-#### 8.4.1 K8S集群外经 EIP 访问 K8S 内微服务
+#### 8.4.1 K8S集群外测试
 
-##### 8.4.1.1 demo/httpbin 调用效果
+##### 8.4.1.1 K8S集群外经 EIP 访问 K8S 内微服务
+
+###### 8.4.1.1.1 demo/httpbin 调用效果
 
 多次执行:
 
@@ -448,9 +452,9 @@ hi, I am httpbin from host: httpbin-84dc4dcffd-dnsq4 at node: worker2 by pipy!
 
 调用效果是分别从两个服务实例返回.
 
-#### 8.4.2 K8S集群外经 EIP 访问跨网段 Eureka 微服务
+##### 8.4.1.2 K8S集群外经 EIP 访问跨网段 Eureka 微服务
 
-##### 8.4.2.1 eureka/httpbin 调用效果
+###### 8.4.1.2.1 eureka/httpbin 调用效果
 
 多次执行:
 
@@ -465,9 +469,9 @@ demo1.httpbin.eureka.smartdns.local
 demo2.httpbin.eureka.smartdns.local
 ```
 
-#### 8.4.3 K8S集群外经 EIP 访问跨网段 Nacos 微服务
+##### 8.4.1.3 K8S集群外经 EIP 访问跨网段 Nacos 微服务
 
-##### 8.4.3.1 nacos/httpbin 调用效果
+###### 8.4.1.3.1 nacos/httpbin 调用效果
 
 多次执行:
 
@@ -482,17 +486,16 @@ demo1.httpbin.nacos.smartdns.local
 demo2.httpbin.nacos.smartdns.local
 ```
 
-#### 8.4.4 K8S集群内域名解析测试
+#### 8.4.2 K8S集群内测试
 
-##### 8.4.4.1 部署被 FSM 管控的模拟业务
+##### 8.4.2.1 部署模拟业务
 
 ```bash
 kubectl create namespace curl
-fsm namespace add curl
 kubectl apply -n curl -f ./manifests/native/curl.yaml
 ```
 
-##### 8.4.4.2  解析 google.com 域名
+##### 8.4.2.2  解析 google.com 域名
 
 执行:
 
@@ -514,3 +517,39 @@ Non-authoritative answer:
 Name:	google.com
 Address: 11.11.11.11
 ```
+
+##### 8.4.2.3 K8S集群内经 EIP 访问跨网段 Eureka 微服务
+
+###### 8.4.2.3.1 eureka/httpbin 调用效果
+
+多次执行:
+
+```bash
+kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 192.168.127.187:14001
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.eureka.smartdns.local
+demo2.httpbin.eureka.smartdns.local
+```
+
+##### 8.4.2.4 K8S集群外经 EIP 访问跨网段 Nacos 微服务
+
+###### 8.4.2.4.1 nacos/httpbin 调用效果
+
+多次执行:
+
+```bash
+kubectl exec "$(kubectl get pod -n curl -l app=curl -o jsonpath='{.items..metadata.name}')" -n curl -- curl -s 192.168.127.188:14001
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.nacos.smartdns.local
+demo2.httpbin.nacos.smartdns.local
+```
+
+#### 
