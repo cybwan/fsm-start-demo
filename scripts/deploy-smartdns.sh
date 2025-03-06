@@ -39,6 +39,7 @@ fsm install \
     --set=fsm.fsmXnetwork.xnet.features.e4lb.enable="${e4lb}" \
     --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[0]=kube-system \
     --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[1]=fsm-system \
+    --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[2]=metallb-system \
     --set=fsm.fsmXnetwork.xnet.features.e4lb.cnis.${e4lb_cni}.enable=true \
     --set=fsm.fsmXnetwork.xnet.features.e4lb.cnis.${e4lb_cni}.bridge4.enable=true \
     --set=fsm.repoServer.image.registry="$PIPY_REGISTRY" \
