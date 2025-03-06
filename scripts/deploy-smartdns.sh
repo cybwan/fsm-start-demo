@@ -37,7 +37,6 @@ fsm install \
     --set=fsm.fsmXnetwork.xnet.nodePaths.k8s.enable="${k8s}" \
     --set=fsm.fsmXnetwork.xnet.features.mesh.enable="${mesh}" \
     --set=fsm.fsmXnetwork.xnet.features.e4lb.enable="${e4lb}" \
-    --set=fsm.fsmXnetwork.xnet.features.mesh.injector.enable=false \
     --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[0]=kube-system \
     --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[1]=fsm-system \
     --set=fsm.fsmXnetwork.xnet.features.e4lb.cnis.${e4lb_cni}.enable=true \
