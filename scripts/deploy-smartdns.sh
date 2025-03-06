@@ -6,6 +6,7 @@ set -o pipefail
 
 CTR_REGISTRY="${CTR_REGISTRY:-flomesh}"
 CTR_TAG="${CTR_TAG:-1.5.0-alpha.11}"
+CTR_XNET_REGISTRY="${CTR_XNET_REGISTRY:-flomesh}"
 CTR_XNET_TAG="${CTR_XNET_TAG:-latest}"
 PIPY_REGISTRY="${PIPY_REGISTRY:-flomesh}"
 IMAGE_PULL_POLICY="${IMAGE_PULL_POLICY:-Always}"
@@ -31,13 +32,16 @@ fsm install \
     --set=fsm.image.tag="$CTR_TAG" \
     --set=fsm.image.pullPolicy="$IMAGE_PULL_POLICY" \
     --set=fsm.trafficInterceptionMode="$sidecar" \
-    --set=fsm.fsmXnetwork.xnet.image.registry="$CTR_REGISTRY" \
+    --set=fsm.fsmXnetwork.xnet.image.registry="$CTR_XNET_REGISTRY" \
     --set=fsm.fsmXnetwork.xnet.image.tag="$CTR_XNET_TAG" \
     --set=fsm.fsmXnetwork.xnet.nodePaths.k8s.enable="${k8s}" \
-    --set=fsm.fsmXnetwork.xnet.features.mesh="${mesh}" \
-    --set=fsm.fsmXnetwork.xnet.features.e4lb="${e4lb}" \
-    --set=fsm.fsmXnetwork.xnet.cnis.${e4lb_cni}.enable=true \
-    --set=fsm.fsmXnetwork.xnet.cnis.${e4lb_cni}.bridge4.enable=true \
+    --set=fsm.fsmXnetwork.xnet.features.mesh.enable="${mesh}" \
+    --set=fsm.fsmXnetwork.xnet.features.e4lb.enable="${e4lb}" \
+    --set=fsm.fsmXnetwork.xnet.features.mesh.injector.enable=false \
+    --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[0]=kube-system \
+    --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[1]=fsm-system \
+    --set=fsm.fsmXnetwork.xnet.features.e4lb.cnis.${e4lb_cni}.enable=true \
+    --set=fsm.fsmXnetwork.xnet.features.e4lb.cnis.${e4lb_cni}.bridge4.enable=true \
     --set=fsm.repoServer.image.registry="$PIPY_REGISTRY" \
     --set=fsm.controllerLogLevel=warn \
     --set=clusterSet.region=LN \

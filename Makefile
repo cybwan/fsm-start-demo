@@ -39,12 +39,11 @@ k3d-reset:
 
 .PHONY: deploy-fsm
 deploy-fsm:
-	@fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) e4lb_cni=$(e4lb_cni) scripts/deploy-fsm.sh
+	scripts/deploy-fsm.sh
 
 .PHONY: deploy-smartdns
 deploy-smartdns:
-	@fsm_cluster_name=$(fsm_cluster_name) sidecar=$(sidecar) k8s=$(k8s) mesh=$(mesh) e4lb=$(e4lb) e4lb_cni=$(e4lb_cni) scripts/deploy-smartdns.sh
-
+	scripts/deploy-smartdns.sh
 
 tail-fsm-controller-logs:
 	cd ${FSM_HOME};./demo/tail-fsm-controller-logs.sh
@@ -76,10 +75,10 @@ tail-fsm-machine-connector-logs:
 	cd ${FSM_HOME};./demo/tail-fsm-machine-connector-logs.sh
 
 tail-fsm-xnetwork-xmgt-logs:
-	cd ${FSM_HOME};./demo/tail-fsm-xnetwork-xmgt-logs.sh
+	./demo/tail-fsm-xnetwork-xmgt-logs.sh
 
 tail-fsm-xnetwork-xnet-logs:
-	cd ${FSM_HOME};./demo/tail-fsm-xnetwork-xnet-logs.sh
+	./demo/tail-fsm-xnetwork-xnet-logs.sh
 
 .PHONY: mount-debugfs
 mount-debugfs:
