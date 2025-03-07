@@ -37,6 +37,10 @@ fsm install \
     --set=fsm.fsmXnetwork.xnet.nodePaths.k8s.enable="${k8s}" \
     --set=fsm.fsmXnetwork.xnet.features.mesh.enable="${mesh}" \
     --set=fsm.fsmXnetwork.xnet.features.e4lb.enable="${e4lb}" \
+    --set=fsm.fsmXnetwork.xnet.features.mesh.magic.ipv4=0420088 \
+    --set=fsm.fsmXnetwork.xnet.features.mesh.magic.ipv6=02 \
+    --set=fsm.fsmXnetwork.xnet.features.e4lb.magic.ipv4=0A50 \
+    --set=fsm.fsmXnetwork.xnet.features.e4lb.magic.ipv6=0A50 \
     --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[0]=kube-system \
     --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[1]=fsm-system \
     --set=fsm.fsmXnetwork.xnet.features.mesh.excludeNamespaces[2]=metallb-system \

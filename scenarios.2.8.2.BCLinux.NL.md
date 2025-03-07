@@ -433,71 +433,16 @@ EOF
 
 ### 8.4 业务功能测试
 
-#### 8.4.1 K8S集群外测试
+#### 8.4.1 K8S集群内测试
 
-##### 8.4.1.1 K8S集群外经 EIP 访问 K8S 内微服务
-
-###### 8.4.1.1.1 demo/httpbin 调用效果
-
-多次执行:
-
-```bash
-curl -s 192.168.127.186:80
-```
-
-返回结果如下:
-
-```bash
-hi, I am httpbin from host: httpbin-84dc4dcffd-hqbzr at node: worker1 by pipy!
-hi, I am httpbin from host: httpbin-84dc4dcffd-dnsq4 at node: worker2 by pipy!
-```
-
-调用效果是分别从两个服务实例返回.
-
-##### 8.4.1.2 K8S集群外经 EIP 访问跨网段 Eureka 微服务
-
-###### 8.4.1.2.1 eureka/httpbin 调用效果
-
-多次执行:
-
-```bash
-curl -s 192.168.127.187:14001
-```
-
-返回结果如下:
-
-```bash
-demo1.httpbin.eureka.smartdns.local
-demo2.httpbin.eureka.smartdns.local
-```
-
-##### 8.4.1.3 K8S集群外经 EIP 访问跨网段 Nacos 微服务
-
-###### 8.4.1.3.1 nacos/httpbin 调用效果
-
-多次执行:
-
-```bash
-curl -s 192.168.127.188:14001
-```
-
-返回结果如下:
-
-```bash
-demo1.httpbin.nacos.smartdns.local
-demo2.httpbin.nacos.smartdns.local
-```
-
-#### 8.4.2 K8S集群内测试
-
-##### 8.4.2.1 部署模拟业务
+##### 8.4.1.1 部署模拟业务
 
 ```bash
 kubectl create namespace curl
 kubectl apply -n curl -f ./manifests/native/curl.yaml
 ```
 
-##### 8.4.2.2  解析 google.com 域名
+##### 8.4.1.2  解析 google.com 域名
 
 执行:
 
@@ -520,9 +465,9 @@ Name:	google.com
 Address: 11.11.11.11
 ```
 
-##### 8.4.2.3 K8S集群内经 EIP 访问跨网段 Eureka 微服务
+##### 8.4.1.3 K8S集群内经 EIP 访问跨网段 Eureka 微服务
 
-###### 8.4.2.3.1 eureka/httpbin 调用效果
+###### 8.4.1.3.1 eureka/httpbin 调用效果
 
 多次执行:
 
@@ -537,9 +482,9 @@ demo1.httpbin.eureka.smartdns.local
 demo2.httpbin.eureka.smartdns.local
 ```
 
-##### 8.4.2.4 K8S集群外经 EIP 访问跨网段 Nacos 微服务
+##### 8.4.1.4 K8S集群内经 EIP 访问跨网段 Nacos 微服务
 
-###### 8.4.2.4.1 nacos/httpbin 调用效果
+###### 8.4.1.4.1 nacos/httpbin 调用效果
 
 多次执行:
 
@@ -554,4 +499,58 @@ demo1.httpbin.nacos.smartdns.local
 demo2.httpbin.nacos.smartdns.local
 ```
 
-#### 
+#### 8.4.2 K8S集群外测试
+
+##### 8.4.2.1 K8S集群外经 EIP 访问 K8S 内微服务
+
+###### 8.4.2.1.1 demo/httpbin 调用效果
+
+多次执行:
+
+```bash
+curl -s 192.168.127.186:80
+```
+
+返回结果如下:
+
+```bash
+hi, I am httpbin from host: httpbin-84dc4dcffd-hqbzr at node: worker1 by pipy!
+hi, I am httpbin from host: httpbin-84dc4dcffd-dnsq4 at node: worker2 by pipy!
+```
+
+调用效果是分别从两个服务实例返回.
+
+##### 8.4.2.2 K8S集群外经 EIP 访问跨网段 Eureka 微服务
+
+###### 8.4.2.2.1 eureka/httpbin 调用效果
+
+多次执行:
+
+```bash
+curl -s 192.168.127.187:14001
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.eureka.smartdns.local
+demo2.httpbin.eureka.smartdns.local
+```
+
+##### 8.4.2.3 K8S集群外经 EIP 访问跨网段 Nacos 微服务
+
+###### 8.4.2.3.1 nacos/httpbin 调用效果
+
+多次执行:
+
+```bash
+curl -s 192.168.127.188:14001
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.nacos.smartdns.local
+demo2.httpbin.nacos.smartdns.local
+```
+
