@@ -472,9 +472,9 @@ kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec
 多次执行:
 
 ```bash
-kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-eureka.liaoning.tenant:14001
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-eureka.liaoning.tenant:14001)
 
-kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-eureka:14001
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-eureka:14001)
 ```
 
 返回结果如下:
@@ -585,9 +585,9 @@ kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec
 多次执行:
 
 ```bash
-kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-nacos.liaoning.tenant:14001
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-nacos.liaoning.tenant:14001)
 
-kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-nacos:14001
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-nacos:14001)
 ```
 
 返回结果如下:
@@ -685,7 +685,7 @@ Address: 22.22.22.22
 多次执行:
 
 ```bash
-kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s 192.168.127.187:14001
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s 192.168.127.187:14001)
 ```
 
 返回结果如下:
@@ -702,7 +702,7 @@ demo2.httpbin.eureka.smartdns.local
 多次执行:
 
 ```bash
-kubectl exec "$(kubectl get pod -n tenant-liaoning -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s 192.168.127.188:14001
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s 192.168.127.188:14001)
 ```
 
 返回结果如下:
