@@ -242,10 +242,12 @@ kind: DNSModifier
 metadata:
   name: ingress-dns-resolve-db
 spec:
-  domains:
-    - name: google.com
-      answer:
-        rdata: 11.11.11.11
+  zones:
+    global:
+      domains:
+        - name: google.com
+          answer:
+            rdata: 11.11.11.11
 ---
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: Filter
@@ -300,13 +302,17 @@ kind: DNSModifier
 metadata:
   name: egress-dns-resolve-db
 spec:
-  domains:
-    - name: google.com
-      answer:
-        rdata: 22.22.22.22
-    - name: httpbin.demo.global
-      answer:
-        rdata: 192.168.127.186
+  zones:
+    global:
+      domains:
+        - name: google.com
+          answer:
+            rdata: 22.22.22.22
+    tenant-liaoning:
+      domains:
+        - name: httpbin.demo.global
+          answer:
+            rdata: 192.168.127.186
 ---
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: Filter
@@ -458,13 +464,13 @@ status:
 ### 7.5 配置 ExternalName 解析记录
 
 ```bash
-kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.liaoning.tenant"}]' | kubectl apply -f -
+kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.liaoning.tenant"}]' | kubectl apply -f -
 
-kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.liaoning.tenant"}]' | kubectl apply -f -
+kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.liaoning.tenant"}]' | kubectl apply -f -
 
-kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
+kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
 
-kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
+kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
 ```
 
 ### 7.6 httpbin-eureka 调用效果
@@ -571,13 +577,13 @@ status:
 ### 8.5 配置 ExternalName 解析记录
 
 ```bash
-kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.liaoning.tenant"}]' | kubectl apply -f -
+kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.liaoning.tenant"}]' | kubectl apply -f -
 
-kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.liaoning.tenant"}]' | kubectl apply -f -
+kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.liaoning.tenant"}]' | kubectl apply -f -
 
-kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
+kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
 
-kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
+kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
 ```
 
 ### 8.6 httpbin-nacos 调用效果
