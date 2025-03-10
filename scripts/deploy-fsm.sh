@@ -37,8 +37,8 @@ fsm install \
     --set=fsm.fsmXnetwork.xnet.nodePaths.k8s.enable="${k8s}" \
     --set=fsm.fsmXnetwork.xnet.features.mesh.enable="${mesh}" \
     --set=fsm.fsmXnetwork.xnet.features.e4lb.enable="${e4lb}" \
-    --set=fsm.fsmXnetwork.xnet.features.e4lb.cnis.${e4lb_cni}.enable=true \
-    --set=fsm.fsmXnetwork.xnet.features.e4lb.cnis.${e4lb_cni}.bridge4.enable=true \
+    --set=fsm.fsmXnetwork.xnet.cnis.${e4lb_cni}.enable=true \
+    --set=fsm.fsmXnetwork.xnet.cnis.${e4lb_cni}.bridge4.enable=true \
     --set=fsm.sidecar.sidecarLogLevel=debug \
     --set=fsm.sidecar.compressConfig=false \
     --set=fsm.sidecar.image.registry="$PIPY_REGISTRY" \
