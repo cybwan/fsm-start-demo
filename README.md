@@ -71,7 +71,7 @@ cd fsm-start-demo
 
 #### 3.1.1 Consul HTTP 单集群微服务融合测试 [Pod Level](scenarios.3.1.1.PL.md) ✓ | [Node Level](scenarios.3.1.1.NL.md) ✓
 
-#### 3.1.2 Eureka HTTP 单集群微服务融合测试 [Pod Level](scenarios.3.1.2.PL.md) ✓ | [Node Level](scenarios.3.1.2.NL.md) ✓
+#### 3.1.2 Eureka HTTP 单集群微服务融合测试 [Pod Level](scenarios.3.1.2.PL.md) ✓ | [Node Level](scenarios.3.1.2.NL.md) ✓ | [Messless](scenarios.3.1.2.ML.md) ✓
 
 #### 3.1.3 Nacos HTTP 单集群微服务融合测试 [Pod Level](scenarios.3.1.3.PL.md) ✓ | [Node Level](scenarios.3.1.3.NL.md) ✓
 
