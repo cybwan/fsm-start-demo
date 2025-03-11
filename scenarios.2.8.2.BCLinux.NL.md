@@ -241,13 +241,6 @@ apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: DNSModifier
 metadata:
   name: ingress-dns-resolve-db
-spec:
-  zones:
-    global:
-      domains:
-        - name: google.com
-          answer:
-            rdata: 11.11.11.11
 ---
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: Filter
@@ -301,18 +294,6 @@ apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: DNSModifier
 metadata:
   name: egress-dns-resolve-db
-spec:
-  zones:
-    global:
-      domains:
-        - name: google.com
-          answer:
-            rdata: 22.22.22.22
-    tenant-liaoning:
-      domains:
-        - name: httpbin.demo.global
-          answer:
-            rdata: 192.168.127.186
 ---
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: Filter
@@ -417,7 +398,7 @@ kubectl get eurekaconnector -n tenant-liaoning eureka-to-tenant-liaoning -o json
 ### 7.3 导入 eureka 上的服务
 
 ```bash
-kubectl get eurekaconnector -n tenant-liaoning eureka-to-tenant-liaoning -o json | jq '.spec.syncToK8S.conversionStrategy.serviceConversions += [{"service": "httpbin", "convertName": "httpbin-eureka", "externalName": "httpbin-eureka.liaoning.tenant"}]' | kubectl apply -f -
+kubectl get eurekaconnector -n tenant-liaoning eureka-to-tenant-liaoning -o json | jq '.spec.syncToK8S.conversionStrategy.serviceConversions += [{"service": "httpbin", "convertName": "httpbin-eureka"}]' | kubectl apply -f -
 ```
 
 ### 7.4 查看已经导入的服务
@@ -437,49 +418,39 @@ metadata:
     flomesh.io/cloud-endpoint-hash: "12101461380361539607"
     flomesh.io/cloud-service-inherited-from: httpbin
     flomesh.io/mesh-service-sync: eureka
-    flomesh.io/mesh-service-sync-managed-by: af8360a6-cbb8-4c42-8e80-6cbc1c0c5230
-  creationTimestamp: "2025-03-09T05:53:09Z"
+    flomesh.io/mesh-service-sync-managed-by: dee19839-2680-4d51-80fe-faa33f2d5959
+  creationTimestamp: "2025-03-11T03:18:35Z"
   labels:
     fsm-connector-cloud-sourced-service: "true"
   name: httpbin-eureka
   namespace: tenant-liaoning
-  resourceVersion: "78706"
-  uid: 236751c9-153f-4743-b52a-7925649d1d4c
+  resourceVersion: "138826"
+  uid: 1f847a85-bb03-4c06-b344-773042221826
 spec:
-  externalName: httpbin-eureka.liaoning.tenant
+  clusterIP: None
+  clusterIPs:
+  - None
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
   ports:
   - appProtocol: http
     name: http14001
     port: 14001
     protocol: TCP
     targetPort: 14001
-  selector:
-    fsm-connector-cloud-service: httpbin-eureka
   sessionAffinity: None
-  type: ExternalName
+  type: ClusterIP
 status:
   loadBalancer: {}
 ```
 
-### 7.5 配置 ExternalName 解析记录
-
-```bash
-kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.liaoning.tenant"}]' | kubectl apply -f -
-
-kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.liaoning.tenant"}]' | kubectl apply -f -
-
-kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
-
-kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "11.11.0.111"},"name": "httpbin-eureka.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
-```
-
-### 7.6 httpbin-eureka 调用效果
+### 7.5 httpbin-eureka 调用效果
 
 多次执行:
 
 ```bash
-echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-eureka.liaoning.tenant:14001)
-
 echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-eureka:14001)
 ```
 
@@ -487,6 +458,7 @@ echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpa
 
 ```bash
 demo1.httpbin.eureka.smartdns.local
+demo2.httpbin.eureka.smartdns.local
 ```
 
 ## 8 导入租户 Nacos 服务
@@ -530,7 +502,7 @@ kubectl get nacosconnector -n tenant-liaoning nacos-to-tenant-liaoning -o jsonpa
 ### 8.3 导入 nacos 上的服务
 
 ```bash
-kubectl get nacosconnector -n tenant-liaoning nacos-to-tenant-liaoning -o json | jq '.spec.syncToK8S.conversionStrategy.serviceConversions += [{"service": "httpbin", "convertName": "httpbin-nacos", "externalName": "httpbin-nacos.liaoning.tenant"}]' | kubectl apply -f -
+kubectl get nacosconnector -n tenant-liaoning nacos-to-tenant-liaoning -o json | jq '.spec.syncToK8S.conversionStrategy.serviceConversions += [{"service": "httpbin", "convertName": "httpbin-nacos"}]' | kubectl apply -f -
 ```
 
 ### 8.4 查看已经导入的服务
@@ -550,49 +522,39 @@ metadata:
     flomesh.io/cloud-endpoint-hash: "16689463773998680651"
     flomesh.io/cloud-service-inherited-from: httpbin
     flomesh.io/mesh-service-sync: nacos
-    flomesh.io/mesh-service-sync-managed-by: 63de936c-4372-4863-84b6-dcd3ff032be1
-  creationTimestamp: "2025-03-09T06:01:11Z"
+    flomesh.io/mesh-service-sync-managed-by: e0f62229-213d-405c-a521-bd827584b1f2
+  creationTimestamp: "2025-03-11T03:20:49Z"
   labels:
     fsm-connector-cloud-sourced-service: "true"
   name: httpbin-nacos
   namespace: tenant-liaoning
-  resourceVersion: "79872"
-  uid: bccc2187-5f4d-4ce5-aedc-050f4cf118bc
+  resourceVersion: "139167"
+  uid: 4b30c9e9-b292-4793-94f1-3ed5f5f160ea
 spec:
-  externalName: httpbin-nacos.liaoning.tenant
+  clusterIP: None
+  clusterIPs:
+  - None
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
   ports:
   - appProtocol: http
     name: http14001
     port: 14001
     protocol: TCP
     targetPort: 14001
-  selector:
-    fsm-connector-cloud-service: httpbin-nacos
   sessionAffinity: None
-  type: ExternalName
+  type: ClusterIP
 status:
   loadBalancer: {}
 ```
 
-### 8.5 配置 ExternalName 解析记录
-
-```bash
-kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.liaoning.tenant"}]' | kubectl apply -f -
-
-kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.liaoning.tenant"}]' | kubectl apply -f -
-
-kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
-
-kubectl get dnsmodifier -n fsm-system ingress-dns-resolve-db -o json | jq '.spec.zones["tenant-liaoning"].domains += [{"answer": {"rdata": "22.22.0.221"},"name": "httpbin-nacos.tenant-liaoning.svc.cluster.local"}]' | kubectl apply -f -
-```
-
-### 8.6 httpbin-nacos 调用效果
+### 8.5 httpbin-nacos 调用效果
 
 多次执行:
 
 ```bash
-echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-nacos.liaoning.tenant:14001)
-
 echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-nacos:14001)
 ```
 
@@ -600,11 +562,16 @@ echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpa
 
 ```bash
 demo1.httpbin.nacos.smartdns.local
+demo2.httpbin.nacos.smartdns.local
 ```
 
 ## 9 SmartDNS 业务测试
 
-### 9.1 tenant-liaoning/httpbin 配置 EIP
+### 9.1 EIP 业务测试
+
+#### 9.1.1 配置 EIP
+
+##### 9.1.1.1 tenant-liaoning/httpbin 配置 EIP
 
 ```bash
 replicas=2 envsubst < ./manifests/native/httpbin-hostname.yaml | kubectl apply -n tenant-liaoning -f -
@@ -623,7 +590,7 @@ spec:
 EOF
 ```
 
-### 9.2 tenant-liaoning/httpbin-eureka 配置 EIP
+##### 9.1.1.2 tenant-liaoning/httpbin-eureka 配置 EIP
 
 ```bash
 kubectl apply -n tenant-liaoning -f - <<EOF
@@ -640,7 +607,7 @@ spec:
 EOF
 ```
 
-### 9.3 tenant-liaoning/httpbin-nacos 配置 EIP
+##### 9.1.1.3 tenant-liaoning/httpbin-nacos 配置 EIP
 
 ```bash
 kubectl apply -n tenant-liaoning -f - <<EOF
@@ -657,9 +624,102 @@ spec:
 EOF
 ```
 
-### 9.4 业务功能测试
+#### 9.1.2 功能测试
 
-#### 9.4.1 K8S集群内测试
+##### 9.1.2.1 K8S集群内测试
+
+###### 9.1.2.1.1 K8S集群内经 EIP 访问跨网段 Eureka 微服务
+
+多次执行:
+
+```bash
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s 192.168.127.187:14001)
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.eureka.smartdns.local
+demo2.httpbin.eureka.smartdns.local
+```
+
+###### 9.1.2.1.2 K8S集群内经 EIP 访问跨网段 Nacos 微服务
+
+多次执行:
+
+```bash
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s 192.168.127.188:14001)
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.nacos.smartdns.local
+demo2.httpbin.nacos.smartdns.local
+```
+
+##### 9.1.2.2 K8S集群外测试
+
+###### 9.1.2.2.1 K8S集群外经 EIP 访问 K8S 内微服务
+
+多次执行:
+
+```bash
+curl -s 192.168.127.186:80
+```
+
+返回结果如下:
+
+```bash
+hi, I am httpbin from host: httpbin-84dc4dcffd-hqbzr at node: worker1 by pipy!
+hi, I am httpbin from host: httpbin-84dc4dcffd-dnsq4 at node: worker2 by pipy!
+```
+
+调用效果是分别从两个服务实例返回.
+
+###### 9.1.2.2.2 K8S集群外经 EIP 访问跨网段 Eureka 微服务
+
+多次执行:
+
+```bash
+curl -s 192.168.127.187:14001
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.eureka.smartdns.local
+demo2.httpbin.eureka.smartdns.local
+```
+
+###### 9.1.2.2.3 K8S集群外经 EIP 访问跨网段 Nacos 微服务
+
+多次执行:
+
+```bash
+curl -s 192.168.127.188:14001
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.nacos.smartdns.local
+demo2.httpbin.nacos.smartdns.local
+```
+
+### 9.2 DNS 业务测试
+
+#### 9.2.1 配置 DNS Resolve DB
+
+##### 9.2.1.1 配置全局 DNS Resolve DB
+
+```bash
+kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["global"].domains += [{"answer": {"rdata": "6.6.6.6"},"name": "google.com"}]' | kubectl apply -f -
+```
+
+#### 9.2.2 功能测试
+
+##### 9.2.2.1 集群内 DNS 测试
 
 ##### 9.4.1.1  解析 google.com 域名
 
@@ -677,99 +737,11 @@ Address:	10.96.0.10:53
 
 Non-authoritative answer:
 Name:	google.com
-Address: 22.22.22.22
+Address: 6.6.6.6
 
 Non-authoritative answer:
 Name:	google.com
-Address: 22.22.22.22
+Address: 6.6.6.6
 ```
 
-##### 9.4.1.2 K8S集群内经 EIP 访问跨网段 Eureka 微服务
-
-###### 9.4.1.2.1 eureka/httpbin 调用效果
-
-多次执行:
-
-```bash
-echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s 192.168.127.187:14001)
-```
-
-返回结果如下:
-
-```bash
-demo1.httpbin.eureka.smartdns.local
-demo2.httpbin.eureka.smartdns.local
-```
-
-##### 9.4.1.3 K8S集群内经 EIP 访问跨网段 Nacos 微服务
-
-###### 9.4.1.3.1 nacos/httpbin 调用效果
-
-多次执行:
-
-```bash
-echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s 192.168.127.188:14001)
-```
-
-返回结果如下:
-
-```bash
-demo1.httpbin.nacos.smartdns.local
-demo2.httpbin.nacos.smartdns.local
-```
-
-#### 9.4.2 K8S集群外测试
-
-##### 9.4.2.1 K8S集群外经 EIP 访问 K8S 内微服务
-
-###### 9.4.2.1.1 demo/httpbin 调用效果
-
-多次执行:
-
-```bash
-curl -s 192.168.127.186:80
-```
-
-返回结果如下:
-
-```bash
-hi, I am httpbin from host: httpbin-84dc4dcffd-hqbzr at node: worker1 by pipy!
-hi, I am httpbin from host: httpbin-84dc4dcffd-dnsq4 at node: worker2 by pipy!
-```
-
-调用效果是分别从两个服务实例返回.
-
-##### 9.4.2.2 K8S集群外经 EIP 访问跨网段 Eureka 微服务
-
-###### 9.4.2.2.1 eureka/httpbin 调用效果
-
-多次执行:
-
-```bash
-curl -s 192.168.127.187:14001
-```
-
-返回结果如下:
-
-```bash
-demo1.httpbin.eureka.smartdns.local
-demo2.httpbin.eureka.smartdns.local
-```
-
-##### 9.4.2.3 K8S集群外经 EIP 访问跨网段 Nacos 微服务
-
-###### 9.4.2.3.1 nacos/httpbin 调用效果
-
-多次执行:
-
-```bash
-curl -s 192.168.127.188:14001
-```
-
-返回结果如下:
-
-```bash
-demo1.httpbin.nacos.smartdns.local
-demo2.httpbin.nacos.smartdns.local
-```
-
+##### 
