@@ -743,5 +743,3 @@ Non-authoritative answer:
 Name:	google.com
 Address: 6.6.6.6
 ```
-
-##### 
