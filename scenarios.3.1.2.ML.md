@@ -49,7 +49,7 @@ WITH_MESH=false fsm_cluster_name=c1 replicas=1 make deploy-eureka-curl
 #### 3.1.1 部署 eureka connector(c1-eureka-to-c1-curl)
 
 ```
-kubectl apply -n fsm-system -f - <<EOF
+kubectl apply -n curl -f - <<EOF
 kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -83,8 +83,7 @@ echo c1_curl_pod_name $c1_curl_pod_name
 **多次执行:**
 
 ```bash
-kubectl exec -n curl $c1_curl_pod_name -c curl -- curl -s httpbin:14001
-kubectl exec -n curl $c1_curl_pod_name -c curl -- curl -s httpbin:14001
+echo $(kubectl exec -n curl $c1_curl_pod_name -c curl -- curl -s httpbin:14001)
 ```
 
 **正确返回结果类似于:**
@@ -99,13 +98,13 @@ c1-httpbin-8497f8477b-vhrfq
 ### 5.1 启用人工干预服务转化策略
 
 ```bash
-kubectl get eurekaconnector -n fsm-system c1-eureka-to-c1-curl -o json | jq '.spec.syncToK8S.conversionStrategy.enable = true' | kubectl apply -f -
+kubectl get eurekaconnector -n curl c1-eureka-to-c1-curl -o json | jq '.spec.syncToK8S.conversionStrategy.enable = true' | kubectl apply -f -
 ```
 
 ### 5.2 查看 eureka 上的服务
 
 ```bash
-kubectl get eurekaconnector -n fsm-system c1-eureka-to-c1-curl -o jsonpath='{.status.catalogServices}' | jq
+kubectl get eurekaconnector -n curl c1-eureka-to-c1-curl -o jsonpath='{.status.catalogServices}' | jq
 ```
 
 返回结果如下:
@@ -124,7 +123,7 @@ kubectl get eurekaconnector -n fsm-system c1-eureka-to-c1-curl -o jsonpath='{.st
 ### 5.3 设置要导入的 eureka 上的服务
 
 ```bash
-kubectl get eurekaconnector -n fsm-system c1-eureka-to-c1-curl -o json | jq '.spec.syncToK8S.conversionStrategy.serviceConversions += [{"service": "httpbin", "convertName": "httpbin-eureka"}]' | kubectl apply -f -
+kubectl get eurekaconnector -n curl c1-eureka-to-c1-curl -o json | jq '.spec.syncToK8S.conversionStrategy.serviceConversions += [{"service": "httpbin", "convertName": "httpbin-eureka"}]' | kubectl apply -f -
 ```
 
 ### 5.4 查看已经导入的服务
@@ -173,11 +172,16 @@ status:
 
 ### 5.5 确认服务调用效果
 
+```bash
+kubecm switch k3d-C1
+export c1_curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
+echo c1_curl_pod_name $c1_curl_pod_name
+```
+
 **多次执行:**
 
 ```bash
-kubectl exec -n curl $c1_curl_pod_name -c curl -- curl -s httpbin-eureka:14001
-kubectl exec -n curl $c1_curl_pod_name -c curl -- curl -s httpbin-eureka:14001
+echo $(kubectl exec -n curl $c1_curl_pod_name -c curl -- curl -s httpbin-eureka:14001)
 ```
 
 **正确返回结果类似于:**

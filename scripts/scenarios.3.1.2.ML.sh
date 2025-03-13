@@ -51,7 +51,7 @@ WITH_MESH=false fsm_cluster_name=c1 replicas=1 make deploy-eureka-curl
 #### 3.1.1 部署 eureka connector(c1-eureka-to-c1-curl)
 
 ###
-kubectl apply -n fsm-system -f - <<EOF
+kubectl apply -n curl -f - <<EOF
 kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
