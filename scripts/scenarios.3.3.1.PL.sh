@@ -201,7 +201,7 @@ echo c1_fgw_pod_ip $c1_fgw_pod_ip
 #### 3.1.2 部署 fgw connector
 
 ###bash
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -231,8 +231,8 @@ kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.i
 
 #### 3.1.4 部署 consul connector(c1-consul-to-c1-derive-consul)
 
-###
-kubectl apply  -f - <<EOF
+###bash
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -244,6 +244,10 @@ spec:
   syncToK8S:
     enable: true
     generateInternalServiceHealthCheck: true
+    appendLabels:
+      flomesh.io/k8s-version: v1
+    appendAnnotations:
+      flomesh.io/k8s-region: c1
     withGateway:
       enable: true
   syncFromK8S:
@@ -255,8 +259,8 @@ EOF
 
 ##c1 k8s微服务同步到c2 eureka##
 
-###
-kubectl apply  -f - <<EOF
+###bash
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -326,7 +330,7 @@ echo c2_fgw_pod_ip $c2_fgw_pod_ip
 #### 3.2.2 部署 fgw connector
 
 ###bash
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -356,8 +360,8 @@ kubectl patch namespace derive-eureka -p '{"metadata":{"annotations":{"flomesh.i
 
 #### 3.2.4 部署 eureka connector(c2-eureka-to-c2-derive-eureka)
 
-###
-kubectl apply  -f - <<EOF
+###bash
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -368,6 +372,10 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    appendLabels:
+      flomesh.io/k8s-version: v2
+    appendAnnotations:
+      flomesh.io/k8s-region: c2
     withGateway:
       enable: true
   syncFromK8S:
@@ -379,8 +387,8 @@ EOF
 
 ##c2 k8s微服务同步到c3 nacos##
 
-###
-kubectl apply  -f - <<EOF
+###bash
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -450,7 +458,7 @@ echo c3_fgw_pod_ip $c3_fgw_pod_ip
 #### 3.3.2 部署 fgw connector
 
 ###bash
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -480,8 +488,8 @@ kubectl patch namespace derive-nacos -p '{"metadata":{"annotations":{"flomesh.io
 
 #### 3.3.4 部署 nacos connector(c3-nacos-to-c3-derive-nacos)
 
-###
-kubectl apply  -f - <<EOF
+###bash
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -492,6 +500,10 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    appendLabels:
+      flomesh.io/k8s-version: v3
+    appendAnnotations:
+      flomesh.io/k8s-region: c3
     withGateway:
       enable: true
   syncFromK8S:
