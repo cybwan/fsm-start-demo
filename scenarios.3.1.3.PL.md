@@ -82,8 +82,8 @@ kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io
 
 #### 3.2.2 部署 nacos connector(c1-nacos-to-c1-derive-local)
 
-```
-kubectl apply  -f - <<EOF
+```bash
+kubectl apply -n "$fsm_namespace"  -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
