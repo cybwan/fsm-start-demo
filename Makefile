@@ -140,7 +140,7 @@ tail-xnet-kernel-reset:
 .PHONY: consul-deploy
 consul-deploy:
 	kubectl apply -n default -f ./manifests/consul.$(CONSUL_VERSION).yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n default -l app=consul --timeout=180s
 	until kubectl get service/consul --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
@@ -151,7 +151,7 @@ consul-reboot:
 .PHONY: eureka-deploy
 eureka-deploy:
 	kubectl apply -n default -f ./manifests/eureka.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n default -l app=eureka --timeout=180s
 	until kubectl get service/eureka --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
@@ -162,14 +162,14 @@ eureka-reboot:
 .PHONY: nacos-deploy
 nacos-deploy:
 	kubectl apply -n default -f ./manifests/nacos.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n default -l app=nacos --timeout=180s
 	until kubectl get service/nacos --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
 .PHONY: nacos-auth-deploy
 nacos-auth-deploy:
 	kubectl apply -n default -f ./manifests/nacos-auth.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n default -l app=nacos --timeout=180s
 	until kubectl get service/nacos --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
@@ -180,7 +180,7 @@ nacos-reboot:
 .PHONY: zk-deploy
 zk-deploy:
 	kubectl apply -n default -f ./manifests/zookeeper.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n default -l app=zookeeper --timeout=180s
 
 .PHONY: zk-reboot
@@ -220,7 +220,7 @@ deploy-native-bookwarehouse: undeploy-native-bookwarehouse
 	kubectl create namespace bookwarehouse
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookwarehouse; fi
 	kubectl apply -n bookwarehouse -f ./manifests/native/bookwarehouse.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
 
 .PHONY: undeploy-native-bookwarehouse
@@ -233,7 +233,7 @@ deploy-native-curl: undeploy-native-curl
 	kubectl create namespace demo
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add demo; fi
 	kubectl apply -n demo -f ./manifests/native/curl.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n demo -l app=curl --timeout=180s
 
 .PHONY: undeploy-native-curl
@@ -247,7 +247,7 @@ deploy-native-httpbin: undeploy-native-httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add demo; fi
 	kubectl apply -n demo -f ./manifests/native/httpbin.yaml
 	kubectl apply -n demo -f ./manifests/native/curl.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n demo -l app=httpbin --timeout=180s
 	kubectl wait --all --for=condition=ready pod -n demo -l app=curl --timeout=180s
 
@@ -262,7 +262,7 @@ deploy-hostname-httpbin: undeploy-hostname-httpbin
 	kubectl create namespace demo
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add demo; fi
 	replicas=$(replicas) envsubst < ./manifests/native/httpbin-hostname.yaml | kubectl apply -n demo -f -
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n demo -l app=httpbin --timeout=180s
 
 .PHONY: undeploy-hostname-httpbin
@@ -272,7 +272,7 @@ undeploy-hostname-httpbin:
 .PHONY: deploy-native-httpbin-fault
 deploy-native-httpbin-fault:
 	kubectl apply -n demo -f ./manifests/native/httpbin-fault.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n demo -l app=httpbin --timeout=180s
 
 .PHONY: deploy-consul-bookwarehouse
@@ -281,7 +281,7 @@ deploy-consul-bookwarehouse:
 	kubectl create namespace bookwarehouse
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookwarehouse; fi
 	kubectl apply -n bookwarehouse -f ./manifests/consul/bookwarehouse.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
 
 .PHONY: deploy-consul-bookstore
@@ -290,7 +290,7 @@ deploy-consul-bookstore:
 	kubectl create namespace bookstore
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookstore; fi
 	kubectl apply -n bookstore -f ./manifests/consul/bookstore.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookstore -l app=bookstore --timeout=180s
 
 .PHONY: deploy-consul-bookbuyer
@@ -299,7 +299,7 @@ deploy-consul-bookbuyer:
 	kubectl create namespace bookbuyer
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookbuyer; fi
 	kubectl apply -n bookbuyer -f ./manifests/consul/bookbuyer.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
 
 .PHONY: deploy-consul-httpbin
@@ -308,7 +308,7 @@ deploy-consul-httpbin:
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
 	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/consul/httpbin.yaml | kubectl apply -n httpbin -f -
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
 .PHONY: deploy-consul-curl
@@ -317,7 +317,7 @@ deploy-consul-curl:
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
 	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/consul/curl.yaml | kubectl apply -n curl -f -
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
 .PHONY: deploy-eureka-bookwarehouse
@@ -326,7 +326,7 @@ deploy-eureka-bookwarehouse:
 	kubectl create namespace bookwarehouse
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookwarehouse; fi
 	kubectl apply -n bookwarehouse -f ./manifests/eureka/bookwarehouse.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
 
 .PHONY: deploy-eureka-bookstore
@@ -335,7 +335,7 @@ deploy-eureka-bookstore:
 	kubectl create namespace bookstore
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookstore; fi
 	kubectl apply -n bookstore -f ./manifests/eureka/bookstore.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookstore -l app=bookstore --timeout=180s
 
 .PHONY: deploy-eureka-bookbuyer
@@ -344,7 +344,7 @@ deploy-eureka-bookbuyer:
 	kubectl create namespace bookbuyer
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookbuyer; fi
 	kubectl apply -n bookbuyer -f ./manifests/eureka/bookbuyer.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
 
 .PHONY: deploy-eureka-httpbin
@@ -353,7 +353,7 @@ deploy-eureka-httpbin:
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
 	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/eureka/httpbin.yaml | kubectl apply -n httpbin -f -
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
 .PHONY: deploy-eureka-curl
@@ -362,7 +362,7 @@ deploy-eureka-curl:
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
 	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/eureka/curl.yaml | kubectl apply -n curl -f -
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
 .PHONY: deploy-nacos-bookwarehouse
@@ -371,7 +371,7 @@ deploy-nacos-bookwarehouse:
 	kubectl create namespace bookwarehouse
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookwarehouse; fi
 	kubectl apply -n bookwarehouse -f ./manifests/nacos/bookwarehouse.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
 
 .PHONY: deploy-nacos-bookstore
@@ -380,7 +380,7 @@ deploy-nacos-bookstore:
 	kubectl create namespace bookstore
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookstore; fi
 	kubectl apply -n bookstore -f ./manifests/nacos/bookstore.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookstore -l app=bookstore --timeout=180s
 
 .PHONY: deploy-nacos-bookbuyer
@@ -389,7 +389,7 @@ deploy-nacos-bookbuyer:
 	kubectl create namespace bookbuyer
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookbuyer; fi
 	kubectl apply -n bookbuyer -f ./manifests/nacos/bookbuyer.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
 
 .PHONY: deploy-nacos-httpbin
@@ -398,7 +398,7 @@ deploy-nacos-httpbin:
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
 	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/nacos/httpbin.yaml | kubectl apply -n httpbin -f -
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
 .PHONY: deploy-nacos-curl
@@ -407,7 +407,7 @@ deploy-nacos-curl:
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
 	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/nacos/curl.yaml | kubectl apply -n curl -f -
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
 .PHONY: deploy-zookeeper-nebula-grcp-server
@@ -416,7 +416,7 @@ deploy-zookeeper-nebula-grcp-server:
 	kubectl create namespace server
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add server; fi
 	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/zookeeper/nebula/grcp.server.yaml | kubectl apply -n server -f -
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n server -l app=nebula-grpc-server --timeout=180s
 
 .PHONY: deploy-zookeeper-nebula-grcp-client
@@ -425,7 +425,7 @@ deploy-zookeeper-nebula-grcp-client:
 	kubectl create namespace client
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add client; fi
 	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/zookeeper/nebula/grcp.client.yaml | kubectl apply -n client -f -
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n client -l app=nebula-grpc-client --timeout=180s
 
 .PHONY: deploy-zookeeper-dubbo-bookwarehouse
@@ -434,7 +434,7 @@ deploy-zookeeper-dubbo-bookwarehouse:
 	kubectl create namespace bookwarehouse
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookwarehouse; fi
 	kubectl apply -n bookwarehouse -f ./manifests/zookeeper/dubbo/bookwarehouse.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
 
 .PHONY: deploy-zookeeper-dubbo-bookstore
@@ -443,7 +443,7 @@ deploy-zookeeper-dubbo-bookstore:
 	kubectl create namespace bookstore
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookstore; fi
 	kubectl apply -n bookstore -f ./manifests/zookeeper/dubbo/bookstore.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookstore -l app=bookstore --timeout=180s
 
 .PHONY: deploy-zookeeper-dubbo-bookbuyer
@@ -452,7 +452,7 @@ deploy-zookeeper-dubbo-bookbuyer:
 	kubectl create namespace bookbuyer
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add bookbuyer; fi
 	kubectl apply -n bookbuyer -f ./manifests/zookeeper/dubbo/bookbuyer.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
 
 .PHONY: deploy-zookeeper-dubbo-httpbin
@@ -461,7 +461,7 @@ deploy-zookeeper-dubbo-httpbin:
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
 	kubectl apply -n httpbin -f ./manifests/zookeeper/dubbo/httpbin.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
 .PHONY: deploy-zookeeper-dubbo-curl
@@ -470,7 +470,7 @@ deploy-zookeeper-dubbo-curl:
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
 	kubectl apply -n curl -f ./manifests/zookeeper/dubbo/curl.yaml
-	sleep 2
+	sleep 5
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
 port-forward-fsm-repo:

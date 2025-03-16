@@ -199,7 +199,7 @@ echo c1_fgw_pod_ip $c1_fgw_pod_ip
 #### 3.1.2 部署 fgw connector
 
 ```bash
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -229,8 +229,8 @@ kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io
 
 #### 3.1.4 部署 nacos connector(c1-nacos-to-c1-derive-local)
 
-```
-kubectl apply  -f - <<EOF
+```bash
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -241,6 +241,16 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    appendLabels:
+      flomesh.io/cluster: c1
+    appendAnnotations:
+      flomesh.io/region: c1
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        io.flomesh.cluster: flomesh.io/cluster
+      annotationConversions:
+        io.flomesh.region: flomesh.io/region
     withGateway: 
       enable: true
   syncFromK8S:
@@ -253,7 +263,7 @@ EOF
 **c1 k8s微服务同步到c2 nacos**
 
 ```
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -265,6 +275,12 @@ spec:
     enable: false
   syncFromK8S:
     enable: true
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        flomesh.io/cluster: io.flomesh.cluster
+      annotationConversions:
+        flomesh.io/region: io.flomesh.region
     withGateway: 
       enable: true
     allowK8sNamespaces:
@@ -323,7 +339,7 @@ echo c2_fgw_pod_ip $c2_fgw_pod_ip
 #### 3.2.2 部署 fgw connector
 
 ```bash
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -353,8 +369,8 @@ kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io
 
 #### 3.2.4 部署 nacos connector(c2-nacos-to-c2-derive-local)
 
-```
-kubectl apply  -f - <<EOF
+```bash
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -365,6 +381,16 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    appendLabels:
+      flomesh.io/cluster: c2
+    appendAnnotations:
+      flomesh.io/region: c2
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        io.flomesh.cluster: flomesh.io/cluster
+      annotationConversions:
+        io.flomesh.region: flomesh.io/region
     withGateway: 
       enable: true
   syncFromK8S:
@@ -376,8 +402,8 @@ EOF
 
 **c2 k8s微服务同步到c3 nacos**
 
-```
-kubectl apply  -f - <<EOF
+```bash
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -389,6 +415,12 @@ spec:
     enable: false
   syncFromK8S:
     enable: true
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        flomesh.io/cluster: io.flomesh.cluster
+      annotationConversions:
+        flomesh.io/region: io.flomesh.region
     withGateway: 
       enable: true
     allowK8sNamespaces:
@@ -447,7 +479,7 @@ echo c3_fgw_pod_ip $c3_fgw_pod_ip
 #### 3.3.2 部署 fgw connector
 
 ```bash
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -477,8 +509,8 @@ kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io
 
 #### 3.3.4 部署 nacos connector(c3-nacos-to-c3-derive-local)
 
-```
-kubectl apply  -f - <<EOF
+```bash
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -489,6 +521,16 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    appendLabels:
+      flomesh.io/cluster: c3
+    appendAnnotations:
+      flomesh.io/region: c3
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        io.flomesh.cluster: flomesh.io/cluster
+      annotationConversions:
+        io.flomesh.region: flomesh.io/region
     withGateway: 
       enable: true
   syncFromK8S:
@@ -501,7 +543,7 @@ EOF
 ```bash
 kubecm switch k3d-C3
 
-PORT_FORWARD="14003:14001" make bookbuyer-port-forward &
+PORT_FORWARD="14003:14001" make bookbuyer-port-forward
 
 访问 
 http://127.0.0.1:14003
