@@ -294,7 +294,7 @@ EOF
 
 #### 3.1.4 部署 consul connector(c1-k8s-to-c3-consul)
 
-**c1 k8s微服务同步到c3 consul**
+##c1 k8s微服务同步到c3 consul##
 
 #
 kubectl apply  -f - <<EOF
@@ -455,7 +455,7 @@ EOF
 
 #### 3.2.4 部署 consul connector(c2-k8s-to-c3-consul)
 
-**c2 k8s微服务同步到c3 consul**
+##c2 k8s微服务同步到c3 consul##
 
 #
 kubectl apply  -f - <<EOF

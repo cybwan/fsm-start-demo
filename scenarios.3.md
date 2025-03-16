@@ -245,6 +245,16 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    appendLabels:
+      flomesh.io/cluster: c1
+    appendAnnotations:
+      flomesh.io/region: c1
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        io.flomesh.cluster: flomesh.io/cluster
+      annotationConversions:
+        io.flomesh.region: flomesh.io/region
     withGateway: 
       enable: true
   syncFromK8S:
@@ -269,6 +279,12 @@ spec:
     enable: false
   syncFromK8S:
     enable: true
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        flomesh.io/cluster: io.flomesh.cluster
+      annotationConversions:
+        flomesh.io/region: io.flomesh.region
     withGateway: 
       enable: true
     allowK8sNamespaces:
@@ -369,6 +385,16 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    appendLabels:
+      flomesh.io/cluster: c2
+    appendAnnotations:
+      flomesh.io/region: c2
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        io.flomesh.cluster: flomesh.io/cluster
+      annotationConversions:
+        io.flomesh.region: flomesh.io/region
     withGateway: 
       enable: true
   syncFromK8S:
@@ -393,6 +419,12 @@ spec:
     enable: false
   syncFromK8S:
     enable: true
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        flomesh.io/cluster: io.flomesh.cluster
+      annotationConversions:
+        flomesh.io/region: io.flomesh.region
     withGateway: 
       enable: true
     allowK8sNamespaces:
@@ -493,6 +525,16 @@ spec:
   asInternalServices: true
   syncToK8S:
     enable: true
+    appendLabels:
+      flomesh.io/cluster: c3
+    appendAnnotations:
+      flomesh.io/region: c3
+    metadataStrategy:
+      enable: true
+      labelConversions:
+        io.flomesh.cluster: flomesh.io/cluster
+      annotationConversions:
+        io.flomesh.region: flomesh.io/region
     withGateway: 
       enable: true
   syncFromK8S:
