@@ -410,6 +410,17 @@ deploy-nacos-curl:
 	sleep 5
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
+.PHONY: deploy-nacos-httpbin-curl
+deploy-nacos-httpbin-curl:
+	kubectl delete namespace httpbin --ignore-not-found
+	kubectl create namespace httpbin
+	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/nacos/httpbin.yaml | kubectl apply -n httpbin -f -
+	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/nacos/curl.yaml    | kubectl apply -n httpbin -f -
+	sleep 5
+	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
+	kubectl wait --all --for=condition=ready pod -n httpbin -l app=curl --timeout=180s
+
 .PHONY: deploy-zookeeper-nebula-grcp-server
 deploy-zookeeper-nebula-grcp-server:
 	kubectl delete namespace server --ignore-not-found
