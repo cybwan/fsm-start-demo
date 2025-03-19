@@ -80,6 +80,12 @@ tail-fsm-xnetwork-xmgt-logs:
 tail-fsm-xnetwork-xnet-logs:
 	./demo/tail-fsm-xnetwork-xnet-logs.sh
 
+shell-fsm-xnetwork-xmgt:
+	./demo/shell-fsm-xnetwork-xmgt.sh
+
+shell-fsm-xnetwork-xnet:
+	./demo/shell-fsm-xnetwork-xnet.sh
+
 .PHONY: mount-debugfs
 mount-debugfs:
 	export INTERCEPTOR_POD=$$(kubectl get pods --selector app=fsm-interceptor -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
