@@ -45,12 +45,11 @@ spec:
           from: All
 EOF
 
-kubectl apply -f - <<EOF
+kubectl apply -n fsm-system -f - <<EOF
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: ListenerFilter
 metadata:
   name: node-sidecar-accesslog
-  namespace: fsm-system
 spec:
   type: AccessLog
   aspect: Route
@@ -89,12 +88,11 @@ echo c1_nacos_pod_ip $c1_nacos_pod_ip
 kubectl create namespace fsm-policy
 fsm namespace add fsm-policy
 
-kubectl apply -f - <<EOF
+kubectl apply -n fsm-policy -f - <<EOF
 kind: AccessControl
 apiVersion: xnetwork.flomesh.io/v1alpha1
 metadata:
   name: global
-  namespace: fsm-policy
 spec:
   services:
   - namespace: default
@@ -113,7 +111,7 @@ kubectl patch namespace derive-nacos -p '{"metadata":{"annotations":{"flomesh.io
 ### 2.7 部署 nacos connector(c1-nacos-to-c1-derive-nacos)
 
 ```
-kubectl apply  -f - <<EOF
+kubectl apply -n fsm-system -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -132,7 +130,7 @@ EOF
 ### 2.8 部署 fgw connector
 
 ```bash
-kubectl apply  -f - <<EOF
+kubectl apply -n fsm-system -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:

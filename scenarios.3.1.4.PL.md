@@ -45,12 +45,11 @@ echo c1_zookeeper_pod_ip $c1_zookeeper_pod_ip
 kubectl create namespace fsm-policy
 fsm namespace add fsm-policy
 
-kubectl apply -f - <<EOF
+kubectl apply -n fsm-policy -f - <<EOF
 kind: AccessControl
 apiVersion: policy.flomesh.io/v1alpha1
 metadata:
   name: global
-  namespace: fsm-policy
 spec:
   sources:
   - kind: Service
@@ -83,7 +82,7 @@ kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io
 #### 3.2.2 部署 zookeeper connector(c1-zookeeper-to-c1-derive-local)
 
 ```
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: ZookeeperConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -124,7 +123,7 @@ echo c1_client_pod_name $c1_client_pod_name
 kubectl logs -n client $c1_client_pod_name -c client -f
 ```
 
-**正确返回结果类似于:
+正确返回结果类似于:
 
 ```bash
 success: true
