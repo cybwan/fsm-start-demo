@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 CTR_REGISTRY="${CTR_REGISTRY:-flomesh}"
-CTR_TAG="${CTR_TAG:-1.5.0-alpha.11}"
+CTR_TAG="${CTR_TAG:-1.5.0-alpha.23}"
 CTR_XNET_REGISTRY="${CTR_XNET_REGISTRY:-flomesh}"
 CTR_XNET_TAG="${CTR_XNET_TAG:-latest}"
 PIPY_REGISTRY="${PIPY_REGISTRY:-flomesh}"
