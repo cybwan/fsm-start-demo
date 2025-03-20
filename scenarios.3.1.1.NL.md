@@ -45,7 +45,7 @@ spec:
           from: All
 EOF
 
-kubectl apply -f - <<EOF
+kubectl apply -n fsm-system -f - <<EOF
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: ListenerFilter
 metadata:
@@ -84,7 +84,7 @@ echo c1_consul_pod_ip $c1_consul_pod_ip
 kubectl create namespace fsm-policy
 fsm namespace add fsm-policy
 
-kubectl apply -f - <<EOF
+kubectl apply -n fsm-policy -f - <<EOF
 kind: AccessControl
 apiVersion: xnetwork.flomesh.io/v1alpha1
 metadata:
@@ -109,7 +109,7 @@ kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.i
 ### 2.7 部署 consul connector(c1-consul-to-c1-derive-consul)
 
 ```
-kubectl apply  -f - <<EOF
+kubectl apply -n fsm-system -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -128,7 +128,7 @@ EOF
 ### 2.8 部署 fgw connector
 
 ```bash
-kubectl apply  -f - <<EOF
+kubectl apply -n fsm-system -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:

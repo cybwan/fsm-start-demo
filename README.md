@@ -29,14 +29,14 @@ fi
 ### 1.3 下载并安装 fsm 命令行工具
 
 ```bash
-https://github.com/cybwan/fsm/releases/tag/v1.5.0-alpha.23
+https://github.com/cybwan/fsm/releases/tag/v1.5.0-alpha.24
 ```
 
 ### 1.4 设置环境变量
 
 ```bash
 export CTR_REGISTRY=cybwan
-export CTR_TAG=1.5.0-alpha.23
+export CTR_TAG=1.5.0-alpha.24
 export K3D_HOST_IP=192.168.127.91 #调整为你的本地IP
 ```
 
