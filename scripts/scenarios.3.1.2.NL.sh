@@ -47,12 +47,11 @@ spec:
           from: All
 EOF
 
-kubectl apply -f - <<EOF
+kubectl apply -n fsm-system -f - <<EOF
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: ListenerFilter
 metadata:
   name: node-sidecar-accesslog
-  namespace: fsm-system
 spec:
   type: AccessLog
   aspect: Route
@@ -86,12 +85,11 @@ echo c1_eureka_pod_ip $c1_eureka_pod_ip
 kubectl create namespace fsm-policy
 fsm namespace add fsm-policy
 
-kubectl apply -f - <<EOF
+kubectl apply -n fsm-policy -f - <<EOF
 kind: AccessControl
 apiVersion: xnetwork.flomesh.io/v1alpha1
 metadata:
   name: global
-  namespace: fsm-policy
 spec:
   services:
   - namespace: default
@@ -110,7 +108,7 @@ kubectl patch namespace derive-eureka -p '{"metadata":{"annotations":{"flomesh.i
 ### 2.7 部署 eureka connector(c1-eureka-to-c1-derive-eureka)
 
 ###
-kubectl apply  -f - <<EOF
+kubectl apply -n fsm-system -f - <<EOF
 kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
@@ -129,7 +127,7 @@ EOF
 ### 2.8 部署 fgw connector
 
 ###bash
-kubectl apply  -f - <<EOF
+kubectl apply -n fsm-system -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:

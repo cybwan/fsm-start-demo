@@ -45,12 +45,11 @@ echo c1_eureka_pod_ip $c1_eureka_pod_ip
 kubectl create namespace fsm-policy
 fsm namespace add fsm-policy
 
-kubectl apply -f - <<EOF
+kubectl apply -n fsm-policy -f - <<EOF
 kind: AccessControl
 apiVersion: policy.flomesh.io/v1alpha1
 metadata:
   name: global
-  namespace: fsm-policy
 spec:
   sources:
   - kind: Service
@@ -83,7 +82,7 @@ kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io
 #### 3.2.2 部署 eureka connector(c1-eureka-to-c1-derive-local)
 
 ```
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: EurekaConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
