@@ -91,7 +91,6 @@ kind: AccessControl
 apiVersion: xnetwork.flomesh.io/v1alpha1
 metadata:
   name: global
-  namespace: fsm-policy
 spec:
   services:
   - namespace: default

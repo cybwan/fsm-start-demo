@@ -33,7 +33,7 @@ kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"traff
 
 ###bash
 make consul-deploy
-#PORT_FORWARD="8500:8500" make consul-port-forward &
+#PORT_FORWARD="18500:8500" make consul-port-forward &
 
 export c1_consul_cluster_ip="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
 echo c1_consul_cluster_ip $c1_consul_cluster_ip
@@ -47,12 +47,11 @@ echo c1_consul_pod_ip $c1_consul_pod_ip
 kubectl create namespace fsm-policy
 fsm namespace add fsm-policy
 
-kubectl apply -f - <<EOF
+kubectl apply -n fsm-policy -f - <<EOF
 kind: AccessControl
 apiVersion: policy.flomesh.io/v1alpha1
 metadata:
   name: global
-  namespace: fsm-policy
 spec:
   sources:
   - kind: Service
@@ -85,7 +84,7 @@ kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io
 #### 3.2.2 部署 consul connector(c1-consul-to-c1-derive-local)
 
 ###
-kubectl apply  -f - <<EOF
+kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
