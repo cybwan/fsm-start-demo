@@ -173,8 +173,6 @@ kubectl delete deployments.apps -n fsm-system fsm-injector
 ### 5.1 部署 FGW
 
 ```bash
-kubectl patch meshconfig fsm-mesh-config -n fsm-system -p '{"spec":{"sidecar":{"xnetDNSProxy":{"enable":true,"upstreams":[{"name":"fsm-gateway-fsm-system-smart-dns-fgw-udp","namespace":"fsm-system","port":10053}]}}}}'  --type=merge
-
 # 指定 fgw 运行所在的 node
 kubectl apply -n fsm-system -f - <<EOF
 apiVersion: v1
@@ -215,6 +213,8 @@ spec:
       kind: ConfigMap
       name: smart-dns-fgw-config
 EOF
+
+kubectl patch meshconfig fsm-mesh-config -n fsm-system -p '{"spec":{"sidecar":{"xnetDNSProxy":{"enable":true,"upstreams":[{"name":"fsm-gateway-fsm-system-smart-dns-fgw-udp","namespace":"fsm-system","port":10053}]}}}}'  --type=merge
 ```
 
 ### 5.2 配置 INGRESS 方向 DNS filter
