@@ -5,7 +5,7 @@
 ## 1 部署 K8S 集群
 
 ###bash
-clusters="C1" agents=2 make k3d-calico-up
+clusters="C1" make k3d-calico-up
 ###
 
 ## 2 部署 SmartDNS 服务
@@ -314,7 +314,7 @@ spec:
     name: httpbin
   eip: 172.22.0.186
   nodes:
-  - k3d-c1-agent-0
+  - k3d-c1-server-0
 EOF
 ###
 
@@ -331,7 +331,7 @@ spec:
     name: httpbin-eureka
   eip: 172.22.0.187
   nodes:
-  - k3d-c1-agent-0
+  - k3d-c1-server-0
 EOF
 ###
 
@@ -348,7 +348,7 @@ spec:
     name: httpbin-nacos
   eip: 172.22.0.188
   nodes:
-  - k3d-c1-agent-0
+  - k3d-c1-server-0
 EOF
 ###
 
