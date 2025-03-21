@@ -211,7 +211,7 @@ docker run -d --hostname demo2.httpbin.eureka.smartdns.local --network fsm --ip 
 ## 5 部署 Nacos 集群
 
 ```bash
-docker run -d --network fsm --ip 172.22.0.220 --rm -e MODE=standalone --name smartdns-nacos -p 8848:8848 -t nacos/nacos-server:v2.3.0
+docker run -d --network fsm --ip 172.22.0.220 --rm -e MODE=standalone --name smartdns-nacos -p 8848:8848 -t nacos/nacos-server:v2.3.0-slim
 
 #等待 nacos 服务启动
 sleep 20s

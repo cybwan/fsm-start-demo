@@ -146,7 +146,7 @@ network:
 ```bash
 if ! docker network ls --format "{{ .Name}}" | grep -q nacos; then docker network create --driver=bridge --subnet=22.22.0.0/16 --gateway=22.22.0.1 nacos; fi
 
-docker run -d --restart always --network nacos --ip 22.22.0.220 -e MODE=standalone --name smartdns-nacos -p 8848:8848 -p 9848:9848 -t nacos/nacos-server:v2.3.0
+docker run -d --restart always --network nacos --ip 22.22.0.220 -e MODE=standalone --name smartdns-nacos -p 8848:8848 -p 9848:9848 -t nacos/nacos-server:v2.3.0-slim
 
 docker run -d --restart always --hostname demo1.httpbin.nacos.smartdns.local --network nacos --ip 22.22.0.221 -e NACOS_SERVICE_URL=22.22.0.220:8848 --name smartdns-nacos-httpbin-demo-1 -t cybwan/smartdns-nacos-httpbin-demo:latest java -Dotel.traces.exporter=none -Dotel.metrics.exporter=none -Dotel.propagators=tracecontext,baggage,b3multi -jar httpbin-nacos.jar
 
