@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 场景 SmartDNS & Flannel 业务测试
+# 场景 SmartDNS & Calico & vxlan 业务测试
 
 ## 1 部署 K8S 集群
 
 ###bash
-clusters="C1" agents=2 make k3d-up
+clusters="C1" agents=2 make k3d-calico-up
 ###
 
 ## 2 部署 SmartDNS 服务
@@ -16,7 +16,7 @@ kubecm switch k3d-C1
 #export CTR_REGISTRY=192.168.226.1:5000/flomesh
 #export CTR_TAG=latest
 
-fsm_cluster_name=C1 sidecar=NodeLevel k3s=true mesh=true e4lb=true make deploy-smartdns
+fsm_cluster_name=C1 sidecar=NodeLevel k8s=true mesh=true e4lb=true e4lb_cni=calicoVxlan make deploy-smartdns
 
 # 无须 injector, 删除 injector
 kubectl delete deployments.apps -n fsm-system fsm-injector

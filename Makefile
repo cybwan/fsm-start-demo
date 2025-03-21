@@ -28,6 +28,11 @@ k3d-up:
 	scripts/k3d-with-registry-multicluster$(WITH_PROXY).sh
 	kubecm list
 
+.PHONY: k3d-calico-up
+k3d-calico-up:
+	scripts/k3d-calico-with-registry-multicluster$(WITH_PROXY).sh
+	kubecm list
+
 .PHONY: k3d-proxy-up
 k3d-proxy-up:
 	scripts/k3d-with-registry-multicluster-with-proxy.sh
@@ -529,8 +534,12 @@ down-scenarios-2.6:
 up-scenarios-2.8.1.NL:
 	./scripts/scenarios.2.8.1.NL.sh
 
-.PHONY: down-scenarios-2.8.1.NL
-down-scenarios-2.8.1.NL:
+.PHONY: up-scenarios-2.8.2.NL
+up-scenarios-2.8.2.NL:
+	./scripts/scenarios.2.8.2.NL.sh
+
+.PHONY: down-scenarios-2.8
+down-scenarios-2.8:
 	clusters="C1" make k3d-reset
 	docker stop smartdns-eureka-httpbin-demo-1
 	docker stop smartdns-eureka-httpbin-demo-2
