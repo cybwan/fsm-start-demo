@@ -32,6 +32,12 @@ switch-images-to-local:
 	@cd manifests;find . -type f | xargs sed -i 's#image: zookeeper#image: localhost:5000/zookeeper#g'
 	@cd manifests;find . -type f | xargs sed -i 's#image: tobilg#image: localhost:5000/tobilg#g'
 	@cd manifests;find . -type f | xargs sed -i 's#image: cybwan#image: localhost:5000/cybwan#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t consul#-t localhost:5000/consul#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t nacos#i-t localhost:5000/nacos#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t flomesh#-t localhost:5000/flomesh#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t zookeeper#-t localhost:5000/zookeeper#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t tobilg#-t localhost:5000/tobilg#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t cybwan#-t localhost:5000/cybwan#g'
 
 .PHONY: switch-images-to-remote
 switch-images-to-remote:
@@ -41,6 +47,12 @@ switch-images-to-remote:
 	@cd manifests;find . -type f | xargs sed -i 's#image: localhost:5000/zookeeper#image: zookeeper#g'
 	@cd manifests;find . -type f | xargs sed -i 's#image: localhost:5000/tobilg#image: tobilg#g'
 	@cd manifests;find . -type f | xargs sed -i 's#image: localhost:5000/cybwan#image: cybwan#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t localhost:5000/consul#-t consul#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t localhost:5000/nacos#-t nacos#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t localhost:5000/flomesh#-t flomesh#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t localhost:5000/zookeeper#-t zookeeper#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t localhost:5000/tobilg#-t tobilg#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t localhost:5000/cybwan#-t cybwan#g'
 
 .PHONY: local
 local: switch-images-to-local
