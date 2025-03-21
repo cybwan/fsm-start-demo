@@ -33,7 +33,7 @@ switch-images-to-local:
 	@cd manifests;find . -type f | xargs sed -i 's#image: tobilg#image: localhost:5000/tobilg#g'
 	@cd manifests;find . -type f | xargs sed -i 's#image: cybwan#image: localhost:5000/cybwan#g'
 	@cd scripts;find . -type f | xargs sed -i 's#-t consul#-t localhost:5000/consul#g'
-	@cd scripts;find . -type f | xargs sed -i 's#-t nacos#i-t localhost:5000/nacos#g'
+	@cd scripts;find . -type f | xargs sed -i 's#-t nacos#-t localhost:5000/nacos#g'
 	@cd scripts;find . -type f | xargs sed -i 's#-t flomesh#-t localhost:5000/flomesh#g'
 	@cd scripts;find . -type f | xargs sed -i 's#-t zookeeper#-t localhost:5000/zookeeper#g'
 	@cd scripts;find . -type f | xargs sed -i 's#-t tobilg#-t localhost:5000/tobilg#g'
