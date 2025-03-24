@@ -44,7 +44,7 @@ spec:
         command:
           - dns
           - server
-          - --laddr=0.0.0.0:1153
+          - --laddr=[::]:1153
           - --trust-domain=cluster.local
           - --wildcard-a-addr=1.1.1.1
           - --wildcard-aaaa-addr=::1.1.1.1
