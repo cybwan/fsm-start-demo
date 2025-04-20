@@ -184,7 +184,7 @@ data:
     fsm:
       gateway:
         nodeSelector:
-          kubernetes.io/hostname: worker1.bc
+          kubernetes.io/hostname: master.bc
 EOF
 
 kubectl apply -n fsm-system -f - <<EOF
@@ -446,21 +446,6 @@ status:
   loadBalancer: {}
 ```
 
-### 7.5 httpbin-eureka 调用效果
-
-多次执行:
-
-```bash
-echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-eureka:14001)
-```
-
-返回结果如下:
-
-```bash
-demo1.httpbin.eureka.smartdns.local
-demo2.httpbin.eureka.smartdns.local
-```
-
 ## 8 导入租户 Nacos 服务
 
 ### 8.1 部署 nacos connector
@@ -550,7 +535,26 @@ status:
   loadBalancer: {}
 ```
 
-### 8.5 httpbin-nacos 调用效果
+## 9 SmartDNS 业务测试
+
+### 9.1 导入服务测试
+
+#### 9.1.1 httpbin-eureka 调用效果
+
+多次执行:
+
+```bash
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s httpbin-eureka:14001)
+```
+
+返回结果如下:
+
+```bash
+demo1.httpbin.eureka.smartdns.local
+demo2.httpbin.eureka.smartdns.local
+```
+
+#### 9.1.2 httpbin-nacos 调用效果
 
 多次执行:
 
@@ -565,13 +569,18 @@ demo1.httpbin.nacos.smartdns.local
 demo2.httpbin.nacos.smartdns.local
 ```
 
-## 9 SmartDNS 业务测试
+### 9.2 EIP 业务测试
 
-### 9.1 EIP 业务测试
+#### 9.2.1 设置宣告节点
 
-#### 9.1.1 配置 EIP
+```bash
+kubectl label nodes worker1.bc flb.flomesh.io/enabled=true
+kubectl label nodes worker2.bc flb.flomesh.io/enabled=true
+```
 
-##### 9.1.1.1 tenant-liaoning/httpbin 配置 EIP
+#### 9.2.2 配置 EIP
+
+##### 9.2.2.1 tenant-liaoning/httpbin 配置 EIP
 
 ```bash
 replicas=2 envsubst < ./manifests/native/httpbin-hostname.yaml | kubectl apply -n tenant-liaoning -f -
@@ -584,13 +593,12 @@ metadata:
 spec:
   service: 
     name: httpbin
-  eip: 192.168.127.186
-  nodes:
-  - worker2.bc
+  eips: 
+  - 192.168.127.186
 EOF
 ```
 
-##### 9.1.1.2 tenant-liaoning/httpbin-eureka 配置 EIP
+##### 9.2.2.2 tenant-liaoning/httpbin-eureka 配置 EIP
 
 ```bash
 kubectl apply -n tenant-liaoning -f - <<EOF
@@ -601,13 +609,12 @@ metadata:
 spec:
   service: 
     name: httpbin-eureka
-  eip: 192.168.127.187
-  nodes:
-  - worker2.bc
+  eips: 
+  - 192.168.127.187
 EOF
 ```
 
-##### 9.1.1.3 tenant-liaoning/httpbin-nacos 配置 EIP
+##### 9.2.2.3 tenant-liaoning/httpbin-nacos 配置 EIP
 
 ```bash
 kubectl apply -n tenant-liaoning -f - <<EOF
@@ -618,17 +625,31 @@ metadata:
 spec:
   service: 
     name: httpbin-nacos
-  eip: 192.168.127.188
-  nodes:
-  - worker2.bc
+  eips: 
+  - 192.168.127.188
 EOF
 ```
 
-#### 9.1.2 功能测试
+#### 9.2.3 功能测试
 
-##### 9.1.2.1 K8S集群内测试
+##### 9.2.3.1 K8S集群内测试
 
-###### 9.1.2.1.1 K8S集群内经 EIP 访问跨网段 Eureka 微服务
+###### 9.2.3.1.1 K8S集群内经 EIP 访问 K8S 内微服务
+
+多次执行:
+
+```bash
+echo $(kubectl exec "$(kubectl get pod -n tenant-liaoning  -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- curl -s 192.168.127.186:80)
+```
+
+返回结果如下:
+
+```bash
+hi, I am httpbin from host: httpbin-84dc4dcffd-hqbzr at node: worker1 by pipy!
+hi, I am httpbin from host: httpbin-84dc4dcffd-dnsq4 at node: worker2 by pipy!
+```
+
+###### 9.2.3.1.2 K8S集群内经 EIP 访问跨网段 Eureka 微服务
 
 多次执行:
 
@@ -643,7 +664,7 @@ demo1.httpbin.eureka.smartdns.local
 demo2.httpbin.eureka.smartdns.local
 ```
 
-###### 9.1.2.1.2 K8S集群内经 EIP 访问跨网段 Nacos 微服务
+###### 9.2.3.1.3 K8S集群内经 EIP 访问跨网段 Nacos 微服务
 
 多次执行:
 
@@ -658,9 +679,9 @@ demo1.httpbin.nacos.smartdns.local
 demo2.httpbin.nacos.smartdns.local
 ```
 
-##### 9.1.2.2 K8S集群外测试
+##### 9.2.3.2 K8S集群外测试
 
-###### 9.1.2.2.1 K8S集群外经 EIP 访问 K8S 内微服务
+###### 9.2.3.2.1 K8S集群外经 EIP 访问 K8S 内微服务
 
 多次执行:
 
@@ -677,7 +698,7 @@ hi, I am httpbin from host: httpbin-84dc4dcffd-dnsq4 at node: worker2 by pipy!
 
 调用效果是分别从两个服务实例返回.
 
-###### 9.1.2.2.2 K8S集群外经 EIP 访问跨网段 Eureka 微服务
+###### 9.2.3.2.2 K8S集群外经 EIP 访问跨网段 Eureka 微服务
 
 多次执行:
 
@@ -692,7 +713,7 @@ demo1.httpbin.eureka.smartdns.local
 demo2.httpbin.eureka.smartdns.local
 ```
 
-###### 9.1.2.2.3 K8S集群外经 EIP 访问跨网段 Nacos 微服务
+###### 9.2.3.2.3 K8S集群外经 EIP 访问跨网段 Nacos 微服务
 
 多次执行:
 
@@ -707,21 +728,44 @@ demo1.httpbin.nacos.smartdns.local
 demo2.httpbin.nacos.smartdns.local
 ```
 
-### 9.2 DNS 业务测试
+### 9.3 DNS 业务测试
 
-#### 9.2.1 配置 DNS Resolve DB
+#### 9.3.1 配置 DNS Resolve DB
 
-##### 9.2.1.1 配置全局 DNS Resolve DB
+##### 9.3.1.1 配置全局 DNS Resolve DB
 
 ```bash
 kubectl get dnsmodifier -n fsm-system egress-dns-resolve-db -o json | jq '.spec.zones["global"].domains += [{"answer": {"rdata": "6.6.6.6"},"name": "google.com"}]' | kubectl apply -f -
 ```
 
-#### 9.2.2 功能测试
+#### 9.3.2 功能测试
 
-##### 9.2.2.1 集群内 DNS 测试
+##### 9.3.2.1 集群内 DNS 测试
 
-##### 9.4.1.1  解析 google.com 域名
+###### 9.3.2.1.1  SmartDNS 部署后创建的 POD
+
+执行:
+
+```bash
+kubectl exec "$(kubectl get pod -n tenant-liaoning -l app=curl -o jsonpath='{.items..metadata.name}')" -n tenant-liaoning -- nslookup google.com
+```
+
+返回结果如下:
+
+```bash
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+Non-authoritative answer:
+Name:	google.com
+Address: 6.6.6.6
+
+Non-authoritative answer:
+Name:	google.com
+Address: 6.6.6.6
+```
+
+###### 9.3.2.1.2  SmartDNS 部署前创建的 POD
 
 执行:
 

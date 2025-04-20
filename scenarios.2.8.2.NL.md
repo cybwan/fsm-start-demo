@@ -460,7 +460,8 @@ metadata:
 spec:
   service: 
     name: httpbin
-  eip: 172.22.0.186
+  eips:
+  - 172.22.0.186
   nodes:
   - k3d-c1-server-0
 EOF
@@ -477,7 +478,8 @@ metadata:
 spec:
   service: 
     name: httpbin-eureka
-  eip: 172.22.0.187
+  eips:
+  - 172.22.0.187
   nodes:
   - k3d-c1-server-0
 EOF
@@ -494,7 +496,8 @@ metadata:
 spec:
   service: 
     name: httpbin-nacos
-  eip: 172.22.0.188
+  eips:
+  - 172.22.0.188
   nodes:
   - k3d-c1-server-0
 EOF
