@@ -3,18 +3,27 @@
 ## 1 部署 k3d 集群
 
 ```bash
-clusters="C1" make k3d-up
+cd $DEMO_HOME
+export https_proxy=http://192.168.226.1:7890
+export http_proxy=http://192.168.226.1:7890
+export all_proxy=socks5://192.168.226.1:7890
+
+clusters="C1" make k3d-proxy-up
 ```
 
 ## 2 部署服务
 
 ```bash
+scp root@192.168.127.9:~/.kube/config ~/.kube/config
+cd $DEMO_HOME
+
 kubecm switch k3d-C1
 ```
 
 ### 2.1 部署 FSM Mesh
 
 ```bash
+export CTR_REGISTRY=192.168.226.1:5000/flomesh
 fsm_cluster_name=C1 fsm_namespace=flomesh-test make deploy-fsm
 ```
 
@@ -126,5 +135,6 @@ httpbin-6fdb4c9544-kb94g%
 ## 4 卸载 k3d 集群
 
 ```bash
+cd $DEMO_HOME
 clusters="C1" make k3d-reset
 ```
