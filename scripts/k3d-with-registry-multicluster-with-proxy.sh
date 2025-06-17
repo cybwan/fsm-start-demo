@@ -59,8 +59,8 @@ k3d cluster create \
  --env HTTPS_PROXY=${https_proxy}@server:* \
  --env http_proxy=${http_proxy}@server:* \
  --env https_proxy=${https_proxy}@server:* \
- --env NO_PROXY=localhost,127.0.0.1,192.168.0.0/16,localaddress,.localdomain.com@server:* \
- --env no_proxy=localhost,127.0.0.1,192.168.0.0/16,localaddress,.localdomain.com@server:* \
+ --env NO_PROXY=localhost,127.0.0.1,192.168.226.1,localaddress,.localdomain.com@server:* \
+ --env no_proxy=localhost,127.0.0.1,192.168.226.1,localaddress,.localdomain.com@server:* \
 --k3s-arg "--cluster-cidr=10.$subnet.1.0/24@server:*" \
 --k3s-arg "--service-cidr=10.$subnet.2.0/24@server:*" \
 --config - <<EOF
