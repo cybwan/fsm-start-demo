@@ -20,12 +20,12 @@ jq_reg_exists=".[] | select(.name == \"$final_reg_name\")"
 jq_reg_running=".[] | select(.name == \"$final_reg_name\" and .State.Running == true)"
 num_of_exists=$(k3d registry list -o json | jq "$jq_reg_exists" | jq -s 'length')
 if [ "${num_of_exists}" == '0' ]; then
-  k3d registry create "$reg_name" --port "127.0.0.1:$reg_port"
+  k3d registry create "$reg_name" --port "0.0.0.0:$reg_port"
 else
   num_of_running=$(k3d registry list -o json | jq "$jq_reg_running" | jq -s 'length')
   if [ "${num_of_exists}" == '1' ] && [ "${num_of_running}" == '0' ]; then
     k3d registry delete "$final_reg_name"
-    k3d registry create "$reg_name" --port "127.0.0.1:$reg_port"
+    k3d registry create "$reg_name" --port "0.0.0.0:$reg_port"
   fi
 fi
 
