@@ -85,7 +85,7 @@ registries:
     - $final_reg_name:$reg_port
   config: |
     mirrors:
-      "192.168.226.1:5000":
+      "localhost:5000":
         endpoint:
           - http://$final_reg_name:$reg_port
 options:
