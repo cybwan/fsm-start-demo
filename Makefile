@@ -51,10 +51,10 @@ eureka-reboot:
 
 .PHONY: nacos-deploy
 nacos-deploy:
-	kubectl apply -n default -f ./manifests/nacos.yaml
+	kubectl apply -n flomesh-test -f ./manifests/nacos.yaml
 	sleep 2
-	kubectl wait --all --for=condition=ready pod -n default -l app=nacos --timeout=180s
-	until kubectl get service/nacos --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+	kubectl wait --all --for=condition=ready pod -n flomesh-test -l app=nacos --timeout=180s
+	until kubectl get service/nacos -n flomesh-test --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
 .PHONY: nacos-auth-deploy
 nacos-auth-deploy:
@@ -92,8 +92,8 @@ eureka-port-forward:
 .PHONY: nacos-port-forward
 nacos-port-forward:
 	export PORT_FORWARD=$(PORT_FORWARD);\
-	export POD=$$(kubectl get pods --selector app=nacos -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
-	kubectl port-forward "$$POD" -n default "$$PORT_FORWARD" --address 0.0.0.0
+	export POD=$$(kubectl get pods --selector app=nacos -n flomesh-test --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n flomesh-test "$$PORT_FORWARD" --address 0.0.0.0
 
 .PHONY: zk-port-forward
 zk-port-forward:
