@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flomesh-demo
+  labels:
+    app: flomesh-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flomesh-demo
+  template:
+    metadata:
+      labels:
+        app: flomesh-demo
+    spec:
+      containers:
+      - name: flomesh-demo-container
+        command: 
+          - "java"
+        args:
+          - "-jar"
+          - "/flomesh-demo.jar"
+          - "--spring.config.location=file:/conf/application.yaml"
+        image: cybwan/flomesh-demo:v3
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "1024Mi"
+            cpu: "500m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+        volumeMounts:
+          - name: flomesh-demo-config
+            mountPath: /conf
+      
+      volumes:
+        - name: flomesh-demo-config
+          configMap:
+            name: flomesh-demo-configmap
+            defaultMode: 420

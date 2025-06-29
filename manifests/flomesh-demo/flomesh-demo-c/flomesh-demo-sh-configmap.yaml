@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flomesh-demo-c-configmap
+  namespace: iflorens-test
+  labels:
+    app: flomesh-demo-c
+data:
+  # 配置文件内容
+  application.yaml: |
+    server:
+      port: 8080
+    spring:
+      application:
+        name: flomesh-demo-c
+      cloud:
+        nacos:
+          discovery:
+            server-addr: nacos.flomesh-test:8848
+            username: nacos
+            password: CN6HamT=w
+            metadata:
+              organization: iflorens-test
+          config:
+            enabled: false
+            refresh-enabled: false
+    logging:
+      level:
+        org:
+          springframework: DEBUG
+    app:
+      name: flomesh-demo-test-cm-sh
