@@ -21,7 +21,13 @@ e4lb ?= false
 e4lb_cni ?= flannel
 replicas ?= 1
 
+region ?= local
+organization ?= fsm
+ha_service ?= false
+
 CONSUL_VERSION ?= 1.15.4
+
+nacos_namespace ?= default
 
 .PHONY: k3d-up
 k3d-up:
@@ -172,17 +178,17 @@ eureka-reboot:
 
 .PHONY: nacos-deploy
 nacos-deploy:
-	kubectl apply -n default -f ./manifests/nacos.yaml
+	kubectl apply -n $(nacos_namespace) -f ./manifests/nacos.yaml
 	sleep 5
-	kubectl wait --all --for=condition=ready pod -n default -l app=nacos --timeout=180s
-	until kubectl get service/nacos --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+	kubectl wait --all --for=condition=ready pod -n $(nacos_namespace) -l app=nacos --timeout=180s
+	until kubectl get -n $(nacos_namespace) service/nacos --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
 .PHONY: nacos-auth-deploy
 nacos-auth-deploy:
-	kubectl apply -n default -f ./manifests/nacos-auth.yaml
+	kubectl apply -n $(nacos_namespace) -f ./manifests/nacos-auth.yaml
 	sleep 5
-	kubectl wait --all --for=condition=ready pod -n default -l app=nacos --timeout=180s
-	until kubectl get service/nacos --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
+	kubectl wait --all --for=condition=ready pod -n $(nacos_namespace) -l app=nacos --timeout=180s
+	until kubectl get -n $(nacos_namespace) service/nacos --output=jsonpath='{.status.loadBalancer}' | grep "ingress"; do : ; done
 
 .PHONY: nacos-reboot
 nacos-reboot:
@@ -213,8 +219,8 @@ eureka-port-forward:
 .PHONY: nacos-port-forward
 nacos-port-forward:
 	export PORT_FORWARD=$(PORT_FORWARD);\
-	export POD=$$(kubectl get pods --selector app=nacos -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
-	kubectl port-forward "$$POD" -n default "$$PORT_FORWARD" --address 0.0.0.0
+	export POD=$$(kubectl get pods --selector app=nacos -n $(nacos_namespace) --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n $(nacos_namespace) "$$PORT_FORWARD" --address 0.0.0.0
 
 .PHONY: zk-port-forward
 zk-port-forward:
@@ -408,7 +414,7 @@ deploy-nacos-httpbin:
 	kubectl delete namespace httpbin --ignore-not-found
 	kubectl create namespace httpbin
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add httpbin; fi
-	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/nacos/httpbin.yaml | kubectl apply -n httpbin -f -
+	cluster=$(fsm_cluster_name) region=$(region) organization=$(organization) ha_service=$(ha_service) replicas=$(replicas) envsubst < ./manifests/nacos/httpbin.yaml | kubectl apply -n httpbin -f -
 	sleep 5
 	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
 
@@ -417,7 +423,7 @@ deploy-nacos-curl:
 	kubectl delete namespace curl --ignore-not-found
 	kubectl create namespace curl
 	if [ "$(WITH_MESH)" = "true" ]; then fsm namespace add curl; fi
-	cluster=$(fsm_cluster_name) replicas=$(replicas) envsubst < ./manifests/nacos/curl.yaml | kubectl apply -n curl -f -
+	cluster=$(fsm_cluster_name) region=$(region) organization=$(organization) ha_service=$(ha_service) replicas=$(replicas) envsubst < ./manifests/nacos/curl.yaml | kubectl apply -n curl -f -
 	sleep 5
 	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
 
