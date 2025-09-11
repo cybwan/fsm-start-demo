@@ -185,6 +185,7 @@ spec:
     enable: true
     allowK8sNamespaces:
       - derive-local
+      - derive-other
 EOF
 ###
 
@@ -370,6 +371,7 @@ spec:
     enable: true
     allowK8sNamespaces:
       - derive-local
+      - derive-other
 EOF
 ###
 
