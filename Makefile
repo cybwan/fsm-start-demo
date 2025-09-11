@@ -1,5 +1,6 @@
 #!make
 
+FSM_SYSTEM ?= fsm-system
 PORT_FORWARD ?= 6060:6060
 ZOOKEEPER_PORT_FORWARD ?= 2181:2181
 ZOOWEBUI_PORT_FORWARD ?= 8081:8081
@@ -503,8 +504,8 @@ deploy-zookeeper-dubbo-curl:
 
 port-forward-fsm-repo:
 	export PORT_FORWARD=$(PORT_FORWARD);\
-	export POD=$$(kubectl get pods --selector app=fsm-controller -n fsm-system --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
-	kubectl port-forward "$$POD" -n fsm-system "$$PORT_FORWARD" --address 0.0.0.0
+	export POD=$$(kubectl get pods --selector app=fsm-controller -n $(FSM_SYSTEM) --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n $(FSM_SYSTEM) "$$PORT_FORWARD" --address 0.0.0.0
 
 .PHONY: bookbuyer-port-forward
 bookbuyer-port-forward:

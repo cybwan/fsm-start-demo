@@ -18,6 +18,7 @@ data:
             server-addr: nacos.flomesh-test:8848
             metadata:
               organization: iflorens-test
+              ha-service: true
           config:
             enabled: false
             refresh-enabled: false

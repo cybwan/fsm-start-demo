@@ -603,10 +603,18 @@ EOF
 
 ```bash
 export flomesh_demo_pod_name="$(kubectl get pod -n iflorens-test --selector app=flomesh-demo -o jsonpath='{.items[0].metadata.name}')"
-echo flomesh_demo_pod_name $flomesh_demo_pod_name
 kubectl exec -it -n iflorens-test $flomesh_demo_pod_name -c flomesh-demo-container -- sh
 echo $(curl http://flomesh-demo-b:8080/mesh/app -s)
+
 echo $(curl http://flomesh-demo-b-svc:8080/mesh/app -s)
+
+kubecm switch k3d-SH
+FSM_SYSTEM=flomesh-test PORT_FORWARD=16060:6060 make port-forward-fsm-repo
+nacos_namespace=flomesh-test PORT_FORWARD="18848:8848" make nacos-port-forward
+
+kubecm switch k3d-HK
+FSM_SYSTEM=flomesh-test PORT_FORWARD=26060:6060 make port-forward-fsm-repo
+nacos_namespace=flomesh-test PORT_FORWARD="28848:8848" make nacos-port-forward
 ```
 
 ## 6 卸载 SH HK 两个集群
