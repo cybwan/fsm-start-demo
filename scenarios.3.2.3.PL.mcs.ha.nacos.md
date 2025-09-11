@@ -594,7 +594,7 @@ kubectl exec -it -n curl $curl_pod_name -c sidecar -- sh
 curl 127.0.0.1:15000/config_dump
 ```
 
-## 5 卸载 SH HK 两个集群
+## 6 卸载 SH HK 两个集群
 
 ```bash
 clusters="SH HK" make k3d-reset
