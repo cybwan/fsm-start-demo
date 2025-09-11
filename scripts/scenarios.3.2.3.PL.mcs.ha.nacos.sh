@@ -1,28 +1,30 @@
+#!/bin/bash
+
 # 场景 Nacos 多集群微服务融合测试
 
 ## 1 部署 SH HK 两个集群
 
-```bash
+###bash
 clusters="SH HK" make k3d-up
-```
+###
 
 ## 2 部署服务
 
 ### 2.1 SH集群
 
-```bash
+###bash
 kubecm switch k3d-SH
-```
+###
 
 #### 2.1.1 部署 FSM Mesh
 
-```bash
+###bash
 fsm_cluster_name=SH sidecar=PodLevel make deploy-fsm
-```
+###
 
 #### 2.1.2 部署 Nacos 微服务
 
-```bash
+###bash
 make nacos-deploy
 #PORT_FORWARD="18848:8848" make nacos-port-forward &
 
@@ -60,23 +62,23 @@ fsm_cluster_name=sh \
 region=sh \
 ha_service=false \
 WITH_MESH=true make deploy-nacos-curl
-```
+###
 
 ### 2.2 HK集群
 
-```bash
+###bash
 kubecm switch k3d-HK
-```
+###
 
 #### 2.2.1 部署 FSM Mesh
 
-```bash
+###bash
 fsm_cluster_name=HK sidecar=PodLevel make deploy-fsm
-```
+###
 
 #### 2.2.1 部署 Nacos 微服务
 
-```bash
+###bash
 make nacos-deploy
 #PORT_FORWARD="28848:8848" make nacos-port-forward &
 
@@ -109,19 +111,19 @@ fsm_cluster_name=hk \
 region=hk \
 ha_service=true \
 WITH_MESH=true make deploy-nacos-httpbin
-```
+###
 
 ## 3 微服务融合
 
 ### 3.1 SH 集群
 
-```bash
+###bash
 kubecm switch k3d-SH
-```
+###
 
 #### 3.1.1 部署 fgw
 
-```bash
+###bash
 export fsm_namespace=fsm-system
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
@@ -161,11 +163,11 @@ echo sh_fgw_external_ip $sh_fgw_external_ip
 
 export sh_fgw_pod_ip="$(kubectl get pod -n $fsm_namespace --selector app=fsm-gateway -o jsonpath='{.items[0].status.podIP}')"
 echo sh_fgw_pod_ip $sh_fgw_pod_ip
-```
+###
 
 #### 3.1.2 部署 fgw connector
 
-```bash
+###bash
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -184,21 +186,21 @@ spec:
     allowK8sNamespaces:
       - derive-local
 EOF
-```
+###
 
 #### 3.1.3 部署 connector-shnacos-shk8slocal
 
 ##### 3.1.3.1 创建 derive-local namespace
 
-```bash
+###bash
 kubectl create namespace derive-local
 fsm namespace add derive-local
 kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
-```
+###
 
 ##### 3.1.3.2 部署 nacos connector
 
-```bash
+###bash
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -223,21 +225,21 @@ spec:
   syncFromK8S:
     enable: false
 EOF
-```
+###
 
 #### 3.1.4 部署 connector-shnacos-shk8sother
 
 ##### 3.1.4.1 创建 derive-other namespace
 
-```bash
+###bash
 kubectl create namespace derive-other
 fsm namespace add derive-other
 kubectl patch namespace derive-other -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
-```
+###
 
 ##### 3.1.3.2 部署 nacos connector
 
-```bash
+###bash
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -262,13 +264,13 @@ spec:
   syncFromK8S:
     enable: false
 EOF
-```
+###
 
 #### 3.1.5 部署 connector-shk8slocal-hknacos
 
-**sh k8s微服务同步到hk nacos**
+##sh k8s微服务同步到hk nacos##
 
-```
+###
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -297,16 +299,16 @@ spec:
       - key: ha_service
         value: "true"
 EOF
-```
+###
 ### 3.2 HK 集群
 
-```bash
+###bash
 kubecm switch k3d-HK
-```
+###
 
 #### 3.2.1 部署 fgw
 
-```bash
+###bash
 export fsm_namespace=fsm-system
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
@@ -346,11 +348,11 @@ echo hk_fgw_external_ip $hk_fgw_external_ip
 
 export hk_fgw_pod_ip="$(kubectl get pod -n $fsm_namespace --selector app=fsm-gateway -o jsonpath='{.items[0].status.podIP}')"
 echo hk_fgw_pod_ip $hk_fgw_pod_ip
-```
+###
 
 #### 3.2.2 部署 fgw connector
 
-```bash
+###bash
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: GatewayConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -369,21 +371,21 @@ spec:
     allowK8sNamespaces:
       - derive-local
 EOF
-```
+###
 
 #### 3.2.3 部署 connector-hknacos-hkk8slocal
 
 ##### 3.2.3.1 创建 derive-local namespace
 
-```bash
+###bash
 kubectl create namespace derive-local
 fsm namespace add derive-local
 kubectl patch namespace derive-local -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
-```
+###
 
 ##### 3.2.3.2 部署 nacos connector
 
-```bash
+###bash
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -408,21 +410,21 @@ spec:
   syncFromK8S:
     enable: false
 EOF
-```
+###
 
 #### 3.1.4 部署 connector-hknacos-hkk8sother
 
 ##### 3.1.4.1 创建 derive-other namespace
 
-```bash
+###bash
 kubectl create namespace derive-other
 fsm namespace add derive-other
 kubectl patch namespace derive-other -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
-```
+###
 
 ##### 3.1.3.2 部署 nacos connector
 
-```bash
+###bash
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -447,13 +449,13 @@ spec:
   syncFromK8S:
     enable: false
 EOF
-```
+###
 
 #### 3.1.5 部署 connector-hkk8slocal-shnacos
 
-**hk k8s微服务同步到sh nacos**
+##hk k8s微服务同步到sh nacos##
 
-```
+###
 kubectl apply -n "$fsm_namespace" -f - <<EOF
 kind: NacosConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -482,24 +484,24 @@ spec:
       - key: ha_service
         value: "true"
 EOF
-```
+###
 ## 4 跨集群HA 配置
 
 ### 4.1 SH 集群
 
-```bash
+###bash
 kubecm switch k3d-SH
-```
+###
 
 #### 4.1.1 配置跨集群策略
 
-```bash
+###bash
 kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"connector":{"lb":{"type":"FailOver","masterNamespace":"derive-local","slaveNamespaces":["derive-other"]}}}}' --type=merge
-```
+###
 
 #### 4.1.2 启用proxy-tag插件
 
-```bash 
+###bash 
 kubectl apply  -n "$fsm_namespace" -f - <<EOF
 apiVersion: extension.gateway.flomesh.io/v1alpha1
 kind: FilterConfig
@@ -526,11 +528,11 @@ spec:
    kind: FilterConfig
    name: proxytag-fc
 EOF
-```
+###
 
 #### 4.1.3 配置默认路由
 
-```bash 
+###bash 
 kubectl apply -n derive-other -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -584,22 +586,4 @@ spec:
             value: "^$"
             type: RegularExpression
 EOF
-```
-
-## 5 测试
-
-```bash
-export curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
-kubectl exec -it -n curl $curl_pod_name -c curl -- sh
-echo $(curl httpbin:14001 -s)
-
-export curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
-kubectl exec -it -n curl $curl_pod_name -c sidecar -- sh
-curl 127.0.0.1:15000/config_dump
-```
-
-## 6 卸载 SH HK 两个集群
-
-```bash
-clusters="SH HK" make k3d-reset
-```
+###
