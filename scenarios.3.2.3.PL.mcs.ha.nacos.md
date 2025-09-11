@@ -582,6 +582,18 @@ spec:
 EOF
 ```
 
+## 5 测试
+
+```bash
+export curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
+kubectl exec -it -n curl $curl_pod_name -c curl -- sh
+echo $(curl httpbin:14001 -s)
+
+export curl_pod_name="$(kubectl get pod -n curl --selector app=curl -o jsonpath='{.items[0].metadata.name}')"
+kubectl exec -it -n curl $curl_pod_name -c sidecar -- sh
+curl 127.0.0.1:15000/config_dump
+```
+
 ## 5 卸载 SH HK 两个集群
 
 ```bash
