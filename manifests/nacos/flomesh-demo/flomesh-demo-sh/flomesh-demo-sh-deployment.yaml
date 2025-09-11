@@ -22,7 +22,7 @@ spec:
           - "-jar"
           - "/flomesh-demo.jar"
           - "--spring.config.location=file:/conf/application.yaml"
-        image: localhost:5000/cybwan/flomesh-demo:v3
+        image: cybwan/flomesh-demo:v3
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080

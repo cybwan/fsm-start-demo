@@ -40,6 +40,11 @@ data:
             server-addr: nacos.default:8848
             username: nacos
             password: nacos
+            metadata:
+              region: ${region}
+              cluster: ${cluster}
+              organization: ${organization}
+              ha_service: ${ha_service}
 ---
 apiVersion: apps/v1
 kind: Deployment
