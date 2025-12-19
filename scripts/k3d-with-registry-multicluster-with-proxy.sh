@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-K3D_IMAGE="${K3D_IMAGE:-rancher/k3s:v1.21.11-k3s1}"
+K3D_IMAGE="${K3D_IMAGE:-rancher/k3s:v1.29.14-k3s1}"
 K3D_HOST_IP="${K3D_HOST_IP:-192.168.127.91}"
 K3D_NETWORK="${K3D_NETWORK:-fsm}"
 
@@ -63,8 +63,10 @@ k3d cluster create \
  --env https_proxy=${https_proxy}@server:* \
  --env NO_PROXY=localhost,127.0.0.1,localaddress,.localdomain.com@server:* \
  --env no_proxy=localhost,127.0.0.1,localaddress,.localdomain.com@server:* \
---k3s-arg "--cluster-cidr=10.$subnet.1.0/24@server:*" \
---k3s-arg "--service-cidr=10.$subnet.2.0/24@server:*" \
+--k3s-arg '--flannel-backend=none@server:*' \
+--k3s-arg '--disable-network-policy@server:*' \
+--k3s-arg "--cluster-cidr=10.$subnet.0.0/16@server:*" \
+--k3s-arg "--service-cidr=20.$subnet.0.0/16@server:*" \
 --config - <<EOF
 apiVersion: k3d.io/v1alpha5
 kind: Simple
@@ -107,25 +109,7 @@ options:
     switchCurrentContext: true
 EOF
 
-if [ "${servers}" -gt 1 ]; then
-  no=0
-  while [ $no -lt "${servers}" ]
-  do
-  cluster=$(echo "$K3D_CLUSTER_NAME" | tr '[:upper:]' '[:lower:]')
-  kubectl node-shell k3d-"${cluster}"-server-$no -- sh -c "mkdir -p /run/flannel;echo FLANNEL_NETWORK=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_SUBNET=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_MTU=1450 >> /run/flannel/subnet.env;echo FLANNEL_IPMASQ=true >> /run/flannel/subnet.env;"
-  ((no=no+1))
-  done
-fi
-
-if [ "${agents}" -gt 0 ]; then
-  no=0
-  while [ $no -lt "$agents" ]
-  do
-  cluster=$(echo "$K3D_CLUSTER_NAME" | tr '[:upper:]' '[:lower:]')
-  kubectl node-shell k3d-"${cluster}"-agent-$no -- sh -c "mkdir -p /run/flannel;echo FLANNEL_NETWORK=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_SUBNET=10.$subnet.1.0/24 >> /run/flannel/subnet.env;echo FLANNEL_MTU=1450 >> /run/flannel/subnet.env;echo FLANNEL_IPMASQ=true >> /run/flannel/subnet.env;"
-  ((no=no+1))
-  done
-fi
+CALICO_IPV4POOL_CIDR=10.$subnet.0.0/16 envsubst < cni/kube-calico.yaml | kubectl create -f -
 
   ((api_port=api_port+1))
   ((port=port+1))
